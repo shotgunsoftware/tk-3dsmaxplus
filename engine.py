@@ -99,9 +99,7 @@ class MaxEngine(tank.platform.Engine):
         return (status, obj)
 
     def _init_pyside(self):
-        """
-        Handles the pyside init
-        """
+        """Handles the pyside init"""
         # first see if pyside is already present - in that case skip!
         try:
             from PySide import QtGui
