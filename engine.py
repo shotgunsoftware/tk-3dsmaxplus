@@ -13,11 +13,20 @@ A 3ds Max engine for Tank.
 import os
 import sys
 import time
+import thread
 
 import tank
 
 
 class MaxEngine(tank.platform.Engine):
+    def __init__(self, *args, **kwargs):
+        # keep track of the main thread id to keep from output on sub-threads
+        self._main_thread_id = thread.get_ident()
+
+        # proceed about your business
+        tank.platform.Engine.__init__(self, *args, **kwargs)
+
+
     def init_engine(self):
         """
         constructor
@@ -46,16 +55,20 @@ class MaxEngine(tank.platform.Engine):
     # logging
     def log_debug(self, msg):
         if self.get_setting("debug_logging", False):
-            print "[%-13s] Shotgun Debug: %s" % (str(time.time()), msg)
+            if thread.get_ident() == self._main_thread_id:
+                print "[%-13s] Shotgun Debug: %s" % (str(time.time()), msg)
 
     def log_info(self, msg):
-        print "[%-13s] Shotgun Info: %s" % (str(time.time()), msg)
+        if thread.get_ident() == self._main_thread_id:
+            print "[%-13s] Shotgun Info: %s" % (str(time.time()), msg)
 
     def log_warning(self, msg):
-        print "[%-13s] Shotgun Warning: %s" % (str(time.time()), msg)
+        if thread.get_ident() == self._main_thread_id:
+            print "[%-13s] Shotgun Warning: %s" % (str(time.time()), msg)
 
     def log_error(self, msg):
-        print "[%-13s] Shotgun Error: %s" % (str(time.time()), msg)
+        if thread.get_ident() == self._main_thread_id:
+            print "[%-13s] Shotgun Error: %s" % (str(time.time()), msg)
 
     ##########################################################################################
     # pyside
