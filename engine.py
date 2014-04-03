@@ -27,9 +27,6 @@ class MaxEngine(tank.platform.Engine):
         # keep handles to all qt dialogs to help GC
         self.__created_qt_dialogs = []
 
-        # add qt paths and dlls
-        self._init_pyside()
-
     def post_app_init(self):
         """
         Called when all apps have initialized
@@ -97,33 +94,3 @@ class MaxEngine(tank.platform.Engine):
 
         # lastly, return the instantiated class
         return (status, obj)
-
-    def _init_pyside(self):
-        """Handles the pyside init"""
-        # first see if pyside is already present - in that case skip!
-        try:
-            from PySide import QtGui
-        except:
-            # fine, we don't expect pyside to be present just yet
-            self.log_debug("PySide not detected - Toolkit will add it to the setup now...")
-        else:
-            # looks like pyside is already working! No need to do anything
-            self.log_debug("PySide detected - Toolkit will use the existing version.")
-            return
-
-        if sys.platform == "win32":
-            pyside_path = os.path.join(self.disk_location, "resources","pyside120_py273_qt471_win64", "python")
-            sys.path.append(pyside_path)
-            dll_path = os.path.join(self.disk_location, "resources","pyside120_py273_qt471_win64", "lib")
-            path = os.environ.get("PATH", "")
-            path += ";%s" % dll_path
-            os.environ["PATH"] = path
-        else:
-            self.log_error("Unknown platform - cannot initialize PySide!")
-
-        # now try to import it
-        try:
-            from PySide import QtGui
-        except Exception, e:
-            self.log_error("PySide could not be imported! Toolkit Apps using pyside will not "
-                           "operate correctly! Error reported: %s" % e)
