@@ -60,6 +60,11 @@ def bootstrap_tank():
     if app is None:
         # create the QApplication
         app = QtGui.QApplication([])
+        
+        # Manne 15 June 2014: 
+        # TODO - Switch over to use new engine._initialize_dark_look_and_feel() method.
+        # See https://github.com/shotgunsoftware/tk-core/pull/80 for details.
+        
         QtGui.QApplication.setStyle("cleanlooks")
         app.setQuitOnLastWindowClosed(False)
 
