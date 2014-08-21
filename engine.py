@@ -17,7 +17,6 @@ import thread
 
 import tank
 
-
 class MaxEngine(tank.platform.Engine):
     def __init__(self, *args, **kwargs):
         # keep track of the main thread id to keep from output on sub-threads
@@ -27,14 +26,34 @@ class MaxEngine(tank.platform.Engine):
         tank.platform.Engine.__init__(self, *args, **kwargs)
 
 
-    def init_engine(self):
+    def pre_app_init(self):
         """
         constructor
         """
+        import MaxPlus
+        from tank.platform.qt import QtCore
+
         self.log_debug("%s: Initializing..." % self)
+
+        # Add image formats since max doesn't add the correct paths by default and jpeg won't be readable
+        maxpath = QtCore.QCoreApplication.applicationDirPath()
+        pluginsPath = os.path.join(maxpath, "plugins")
+        QtCore.QCoreApplication.addLibraryPath(pluginsPath)
 
         # keep handles to all qt dialogs to help GC
         self.__created_qt_dialogs = []
+
+        # Window focus objects are used to enable proper keyboard handling by the window instead of 3dsMax's accelerators
+        class WindowFocus(QtCore.QObject):
+            def eventFilter(self, obj, event):
+                if event.type() == QtCore.QEvent.WindowActivate:
+                    MaxPlus.CUI.DisableAccelerators()
+                elif event.type() == QtCore.QEvent.WindowDeactivate:
+                    MaxPlus.CUI.EnableAccelerators()
+
+                return False;
+
+        self.windowFocus = WindowFocus()
 
     def post_app_init(self):
         """
@@ -80,6 +99,7 @@ class MaxEngine(tank.platform.Engine):
 
         # now create a dialog
         dialog = tankqdialog.TankQDialog(title, bundle, obj, None)
+        dialog.installEventFilter(self.windowFocus)
 
         # keep a reference to all created dialogs to make GC happy
         self.__created_qt_dialogs.append(dialog)
@@ -98,6 +118,7 @@ class MaxEngine(tank.platform.Engine):
 
         # now create a dialog
         dialog = tankqdialog.TankQDialog(title, bundle, obj, None)
+        dialog.installEventFilter(self.windowFocus)
 
         # keep a reference to all created dialogs to make GC happy
         self.__created_qt_dialogs.append(dialog)
