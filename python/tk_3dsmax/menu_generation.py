@@ -14,12 +14,12 @@ Menu handling for 3ds Max
 import os
 import sys
 import traceback
+import uuid
 
 from PySide import QtGui
 from PySide import QtCore
 
 import MaxPlus
-
 
 class MenuGenerator(object):
     """
@@ -29,6 +29,21 @@ class MenuGenerator(object):
         self._engine = engine
         self._menu_handle = None
         self._menu_builder = None
+
+    @staticmethod
+    def CreateUniqueMenuItem(category, name, fxn):
+        """ 
+        Creates a new action item from the category, name, function and objct to use as hash for the menu.
+        """
+        uniqueId = uuid.uuid4()
+
+        item = MaxPlus._CustomActionItem(category, name, fxn)
+        
+        # MaxPlus normally uses a hash based on menu name, which isn't good for reloading menus. Using a globally unique id instead
+        item.GetId = lambda : hash(uniqueId)
+
+        MaxPlus.ActionFactory.CustomActionItems.append(item)
+        return MaxPlus.ActionFactory.CreateFromAbstract(item)
 
     def create_menu(self):
         """
@@ -117,9 +132,9 @@ class MenuGenerator(object):
             MaxPlus.MenuManager.UnregisterMenu(ctx_name)
         ctx_builder = MaxPlus.MenuBuilder(ctx_name)
 
-        action = MaxPlus.ActionFactory.Create("Jump to Shotgun", "Jump to Shotgun", self._jump_to_sg)
+        action = MenuGenerator.CreateUniqueMenuItem("Jump to Shotgun", "Jump to Shotgun", self._jump_to_sg)
         ctx_builder.AddItem(action)
-        action = MaxPlus.ActionFactory.Create("Jump to File System", "Jump to File System", self._jump_to_fs)
+        action = MenuGenerator.CreateUniqueMenuItem("Jump to File System", "Jump to File System", self._jump_to_fs)
         ctx_builder.AddItem(action)
         ctx_builder.AddSeparator()
 
@@ -245,9 +260,7 @@ class AppCommand(object):
             self.callback()
         except:
             tb = traceback.format_exc()
-            print "---- ERROR CALLING %s ----" % self.name
-            print tb
 
     def add_to_builder(self, builder):
-        action = MaxPlus.ActionFactory.Create(self.name, self.name, self._caller)
+        action = MenuGenerator.CreateUniqueMenuItem(self.name, self.name, self._caller)
         builder.AddItem(action)

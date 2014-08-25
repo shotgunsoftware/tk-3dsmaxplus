@@ -18,13 +18,13 @@ import thread
 import tank
 
 class MaxEngine(tank.platform.Engine):
+
     def __init__(self, *args, **kwargs):
         # keep track of the main thread id to keep from output on sub-threads
         self._main_thread_id = thread.get_ident()
 
         # proceed about your business
         tank.platform.Engine.__init__(self, *args, **kwargs)
-
 
     def pre_app_init(self):
         """
