@@ -8,30 +8,32 @@
 # agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 """
-A 3ds Max engine for Tank.
+A 3ds Max (2015+) engine for Toolkit that uses MaxPlus.
 """
 import os
 import sys
 import time
 import thread
 
-import tank
+import sgtk
+import MaxPlus
 
-class MaxEngine(tank.platform.Engine):
-
+class MaxEngine(sgtk.platform.Engine):
+    """
+    The main Toolkit engine for 3ds Max
+    """
     def __init__(self, *args, **kwargs):
         # keep track of the main thread id to keep from output on sub-threads
         self._main_thread_id = thread.get_ident()
 
         # proceed about your business
-        tank.platform.Engine.__init__(self, *args, **kwargs)
+        sgtk.platform.Engine.__init__(self, *args, **kwargs)
 
     def pre_app_init(self):
         """
         constructor
         """
-        import MaxPlus
-        from tank.platform.qt import QtCore
+        from sgtk.platform.qt import QtCore
 
         self.log_debug("%s: Initializing..." % self)
 
@@ -39,9 +41,6 @@ class MaxEngine(tank.platform.Engine):
         maxpath = QtCore.QCoreApplication.applicationDirPath()
         pluginsPath = os.path.join(maxpath, "plugins")
         QtCore.QCoreApplication.addLibraryPath(pluginsPath)
-
-        # keep handles to all qt dialogs to help GC
-        self.__created_qt_dialogs = []
 
         # Window focus objects are used to enable proper keyboard handling by the window instead of 3dsMax's accelerators
         class WindowFocus(QtCore.QObject):
@@ -73,58 +72,42 @@ class MaxEngine(tank.platform.Engine):
     ##########################################################################################
     # logging
     def log_debug(self, msg):
+        """
+        Debug logging.
+        :param msg: The message string to log
+        """
         if self.get_setting("debug_logging", False):
             if thread.get_ident() == self._main_thread_id:
                 print "[%-13s] Shotgun Debug: %s" % (str(time.time()), msg)
 
     def log_info(self, msg):
+        """
+        Info logging.
+        :param msg: The message string to log
+        """
         if thread.get_ident() == self._main_thread_id:
             print "[%-13s] Shotgun Info: %s" % (str(time.time()), msg)
 
     def log_warning(self, msg):
+        """
+        Warning logging.
+        :param msg: The message string to log
+        """
         if thread.get_ident() == self._main_thread_id:
             print "[%-13s] Shotgun Warning: %s" % (str(time.time()), msg)
 
     def log_error(self, msg):
+        """
+        Error logging.
+        :param msg: The message string to log
+        """
         if thread.get_ident() == self._main_thread_id:
             print "[%-13s] Shotgun Error: %s" % (str(time.time()), msg)
 
     ##########################################################################################
-    # pyside
-    def show_dialog(self, title, bundle, widget_class, *args, **kwargs):
-        from tank.platform.qt import tankqdialog
-
-        # first construct the widget object
-        obj = widget_class(*args, **kwargs)
-
-        # now create a dialog
-        dialog = tankqdialog.TankQDialog(title, bundle, obj, None)
+    # Engine
+    def _create_dialog(self, title, bundle, widget, parent):
+        dialog = sgtk.platform.Engine._create_dialog(self, title, bundle, widget, parent)
         dialog.installEventFilter(self.windowFocus)
 
-        # keep a reference to all created dialogs to make GC happy
-        self.__created_qt_dialogs.append(dialog)
-
-        # finally show it
-        dialog.show()
-
-        # lastly, return the instantiated class
-        return obj
-
-    def show_modal(self, title, bundle, widget_class, *args, **kwargs):
-        from tank.platform.qt import tankqdialog
-
-        # first construct the widget object
-        obj = widget_class(*args, **kwargs)
-
-        # now create a dialog
-        dialog = tankqdialog.TankQDialog(title, bundle, obj, None)
-        dialog.installEventFilter(self.windowFocus)
-
-        # keep a reference to all created dialogs to make GC happy
-        self.__created_qt_dialogs.append(dialog)
-
-        # finally launch it, modal state
-        status = dialog.exec_()
-
-        # lastly, return the instantiated class
-        return (status, obj)
+        return dialog
