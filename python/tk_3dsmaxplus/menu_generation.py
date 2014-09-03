@@ -26,6 +26,9 @@ class MenuGenerator(object):
     Menu generation functionality for 3dsmax
     """
     def __init__(self, engine):
+        """
+        Initialize Menu Generator.
+        """
         self._engine = engine
         self._menu_handle = None
         self._menu_builder = None
@@ -108,24 +111,7 @@ class MenuGenerator(object):
         Adds a context menu wich displays the current context
         """
         ctx = self._engine.context
-
-        if ctx.entity is None:
-            ctx_name = "%s" % ctx.project["name"]
-
-        elif ctx.step is None and ctx.task is None:
-            # entity only
-            # e.g. Shot ABC_123
-            ctx_name = "%s %s" % (ctx.entity["type"], ctx.entity["name"])
-        else:
-            # we have either step or task
-            task_step = None
-            if ctx.step:
-                task_step = ctx.step.get("name")
-            if ctx.task:
-                task_step = ctx.task.get("name")
-
-            # e.g. [Lighting, Shot ABC_123]
-            ctx_name = "%s, %s %s" % (task_step, ctx.entity["type"], ctx.entity["name"])
+        ctx_name = str(ctx)
 
         # create the builder object
         if MaxPlus.MenuManager.MenuExists(ctx_name):
@@ -204,6 +190,11 @@ class AppCommand(object):
     Wraps around a single command that you get from engine.commands
     """
     def __init__(self, name, command_dict):
+        """
+        Initialize AppCommand object.
+        :param name: Command name
+        :param command_dict: Dictionary containing a 'callback' property to use as callback.
+        """
         self.name = name
         self.properties = command_dict["properties"]
         self.callback = command_dict["callback"]
@@ -251,16 +242,23 @@ class AppCommand(object):
 
     def get_type(self):
         """
-        returns the command type. Returns node, custom_pane or default
+        returns the command type. Returns node, custom_pane or default.
         """
         return self.properties.get("type", "default")
 
     def _caller(self):
+        """
+        Delegate method for this command
+        """
         try:
             self.callback()
         except:
             tb = traceback.format_exc()
 
     def add_to_builder(self, builder):
+        """
+        Add a menu item for this command to the given builder.
+        :param builder: Builder to add menu item to.
+        """
         action = MenuGenerator.CreateUniqueMenuItem(self.name, self.name, self._caller)
         builder.AddItem(action)

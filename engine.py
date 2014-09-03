@@ -23,9 +23,6 @@ class MaxEngine(sgtk.platform.Engine):
     The main Toolkit engine for 3ds Max
     """
     def __init__(self, *args, **kwargs):
-        # keep track of the main thread id to keep from output on sub-threads
-        self._main_thread_id = thread.get_ident()
-
         # proceed about your business
         sgtk.platform.Engine.__init__(self, *args, **kwargs)
 
@@ -59,9 +56,19 @@ class MaxEngine(sgtk.platform.Engine):
         Called when all apps have initialized
         """
         # set up menu handler
-        tk_3dsmax = self.import_module("tk_3dsmax")
+        tk_3dsmax = self.import_module("tk_3dsmaxplus")
         self._menu_generator = tk_3dsmax.MenuGenerator(self)
         self._menu_generator.create_menu()
+
+        # set up a qt style sheet
+        # note! - try to be smart about this and only run
+        # the style setup once per session - it looks like
+        # 3dsmax slows down if this is executed every engine restart. 
+        qt_app_obj = sgtk.platform.qt.QtCore.QCoreApplication.instance()
+        curr_stylesheet = qt_app_obj.styleSheet()
+
+        if "toolkit 3dsmax style extension" not in curr_stylesheet:
+            self._initialize_dark_look_and_feel()
 
     def destroy_engine(self):
         """
@@ -71,42 +78,48 @@ class MaxEngine(sgtk.platform.Engine):
 
     ##########################################################################################
     # logging
+    # Should only call logging function from the main thread, although output to listener is
+    # supposed to be thread-safe.
+    # Note From the max team: Python scripts run in MAXScript are not thread-safe.  
+    #                         Python commands are always executed in the main 3ds Max thread.  
+    #                         You should not attempt to spawn separate threads in your scripts 
+    #                         (for example, by using the Python threading module).
     def log_debug(self, msg):
         """
         Debug logging.
         :param msg: The message string to log
         """
         if self.get_setting("debug_logging", False):
-            if thread.get_ident() == self._main_thread_id:
-                print "[%-13s] Shotgun Debug: %s" % (str(time.time()), msg)
+            print "[%-13s] Shotgun Debug: %s" % (str(time.time()), msg)
 
     def log_info(self, msg):
         """
         Info logging.
         :param msg: The message string to log
         """
-        if thread.get_ident() == self._main_thread_id:
-            print "[%-13s] Shotgun Info: %s" % (str(time.time()), msg)
+        print "[%-13s] Shotgun Info: %s" % (str(time.time()), msg)
 
     def log_warning(self, msg):
         """
         Warning logging.
         :param msg: The message string to log
         """
-        if thread.get_ident() == self._main_thread_id:
-            print "[%-13s] Shotgun Warning: %s" % (str(time.time()), msg)
+        print "[%-13s] Shotgun Warning: %s" % (str(time.time()), msg)
 
     def log_error(self, msg):
         """
         Error logging.
         :param msg: The message string to log
         """
-        if thread.get_ident() == self._main_thread_id:
-            print "[%-13s] Shotgun Error: %s" % (str(time.time()), msg)
+        print "[%-13s] Shotgun Error: %s" % (str(time.time()), msg)
 
     ##########################################################################################
     # Engine
     def _create_dialog(self, title, bundle, widget, parent):
+        """
+        Parent function override to install event filtering in order to allow proper events to
+        reach window dialogs (such as keyboard events).
+        """
         dialog = sgtk.platform.Engine._create_dialog(self, title, bundle, widget, parent)
         dialog.installEventFilter(self.windowFocus)
 
