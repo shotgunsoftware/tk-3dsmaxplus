@@ -23,12 +23,15 @@ class MaxEngine(sgtk.platform.Engine):
     The main Toolkit engine for 3ds Max
     """
     def __init__(self, *args, **kwargs):
+        """
+        Engine Constructor
+        """
         # proceed about your business
         sgtk.platform.Engine.__init__(self, *args, **kwargs)
 
     def pre_app_init(self):
         """
-        constructor
+        Called before all apps have initialized
         """
         from sgtk.platform.qt import QtCore
 
@@ -51,15 +54,6 @@ class MaxEngine(sgtk.platform.Engine):
 
         self.windowFocus = WindowFocus()
 
-    def post_app_init(self):
-        """
-        Called when all apps have initialized
-        """
-        # set up menu handler
-        tk_3dsmax = self.import_module("tk_3dsmaxplus")
-        self._menu_generator = tk_3dsmax.MenuGenerator(self)
-        self._menu_generator.create_menu()
-
         # set up a qt style sheet
         # note! - try to be smart about this and only run
         # the style setup once per session - it looks like
@@ -69,6 +63,15 @@ class MaxEngine(sgtk.platform.Engine):
 
         if "toolkit 3dsmax style extension" not in curr_stylesheet:
             self._initialize_dark_look_and_feel()
+
+    def post_app_init(self):
+        """
+        Called when all apps have initialized
+        """
+        # set up menu handler
+        tk_3dsmax = self.import_module("tk_3dsmaxplus")
+        self._menu_generator = tk_3dsmax.MenuGenerator(self)
+        self._menu_generator.create_menu()
 
     def destroy_engine(self):
         """

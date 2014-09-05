@@ -28,6 +28,7 @@ class MenuGenerator(object):
     def __init__(self, engine):
         """
         Initialize Menu Generator.
+        :param engine: Engine to get commands from.
         """
         self._engine = engine
         self._menu_handle = None
@@ -37,6 +38,10 @@ class MenuGenerator(object):
     def CreateUniqueMenuItem(category, name, fxn):
         """ 
         Creates a new action item from the category, name, function and objct to use as hash for the menu.
+        :param category: Menu category (string) to create the item in
+        :param name: Menu name (string) to create the item in
+        :param fxn: Function callback on menu item clicked
+        :returns: Menu item
         """
         uniqueId = uuid.uuid4()
 
@@ -109,6 +114,7 @@ class MenuGenerator(object):
     def _create_context_builder(self):
         """
         Adds a context menu wich displays the current context
+        :returns: Menu builder
         """
         ctx = self._engine.context
         ctx_name = str(ctx)
@@ -160,6 +166,8 @@ class MenuGenerator(object):
     def _add_app_menu(self, commands_by_app):
         """
         Add all apps to the main menu, process them one by one.
+        :param commands_by_app: Dictionary of app name and commands related to the app, which
+                                will be added to the menu builder
         """
         for app_name in sorted(commands_by_app.keys()):
             if len(commands_by_app[app_name]) > 1:
