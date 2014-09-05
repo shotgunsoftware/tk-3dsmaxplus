@@ -64,6 +64,10 @@ class MaxEngine(sgtk.platform.Engine):
         if "toolkit 3dsmax style extension" not in curr_stylesheet:
             self._initialize_dark_look_and_feel()
 
+            curr_stylesheet += "\n\n /* toolkit 3dsmax style extension */ \n\n"
+            curr_stylesheet += "\n\n QDialog#TankDialog > QWidget { background-color: #343434; }\n\n"        
+            qt_app_obj.setStyleSheet(curr_stylesheet) 
+
     def post_app_init(self):
         """
         Called when all apps have initialized
