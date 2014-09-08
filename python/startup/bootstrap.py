@@ -19,7 +19,7 @@ def error(msg):
     """
     print "ERROR: %s" % msg
 
-def bootstrap_tank():
+def bootstrap_sgtk():
     """
     Bootstrap. This is called when preparing to launch by multi-launch.
     """
@@ -68,4 +68,4 @@ def bootstrap_tank():
         if var in os.environ:
             del os.environ[var]
 
-bootstrap_tank()
+bootstrap_sgtk()

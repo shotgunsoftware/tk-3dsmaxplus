@@ -221,11 +221,9 @@ class AppCommand(object):
         Returns the name of the app instance, as defined in the environment.
         Returns None if not found.
         """
-        if "app" not in self.properties:
+        engine = self.get_engine()
+        if engine is None:
             return None
-
-        app_instance = self.properties["app"]
-        engine = app_instance.engine
 
         for (app_instance_name, app_instance_obj) in engine.apps.items():
             if app_instance_obj == app_instance:
@@ -248,6 +246,19 @@ class AppCommand(object):
 
         return None
 
+    def get_engine(self):
+        """
+        Returns the engine from the App Instance
+        Returns None if not found
+        """
+        if "app" not in self.properties:
+            return None
+
+        app_instance = self.properties["app"]
+        engine = app_instance.engine
+
+        return engine
+
     def get_type(self):
         """
         returns the command type. Returns node, custom_pane or default.
@@ -262,6 +273,10 @@ class AppCommand(object):
             self.callback()
         except:
             tb = traceback.format_exc()
+
+            engine = self.get_engine()
+            if engine is not None:
+                engine.log_error("Failed to call command '%s'. '%s'!" % (self.name, tb))
 
     def add_to_builder(self, builder):
         """
