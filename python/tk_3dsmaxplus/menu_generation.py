@@ -185,8 +185,6 @@ class MenuGenerator(object):
             else:
                 # this app only has a single entry.
                 # display that on the menu
-                # todo: Should this be labelled with the name of the app
-                # or the name of the menu item? Not sure.
                 cmd_obj = commands_by_app[app_name][0]
                 if not cmd_obj.favourite:
                     # skip favourites since they are alreay on the menu
