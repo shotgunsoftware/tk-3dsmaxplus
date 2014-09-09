@@ -179,4 +179,4 @@ class MaxEngine(sgtk.platform.Engine):
         # Transform it to a version id
         version = MaxEngine.GET_MAX_RELEASE(versionId)
         
-        return version >= MaxEngine.MAX_RELEASE_R17
+        return version >= MaxEngine.MAX_RELEASE_R17()
