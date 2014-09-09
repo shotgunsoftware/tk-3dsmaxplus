@@ -38,7 +38,7 @@ class MaxEngine(sgtk.platform.Engine):
         """
         self.log_debug("%s: Initializing..." % self)
 
-        if MaxEngine.isMax2015():
+        if not MaxEngine.isAtLeastMax2015():
             msg = "Warning - Shotgun Pipeline Toolkit!\n\nDoes not work with 3ds max versions prior to 2015."
             MaxPlus.Core.EvalMAXScript('messagebox "' + msg + '" title: "Shotgun Warning"')
                            
@@ -168,7 +168,7 @@ class MaxEngine(sgtk.platform.Engine):
         return 17000
 
     @staticmethod
-    def isMax2015():
+    def isAtLeastMax2015():
         """
         Returns True if current Max version is equal or above 3ds max 2015
         """
