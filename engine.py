@@ -39,12 +39,7 @@ class MaxEngine(sgtk.platform.Engine):
         """
         self.log_debug("%s: Initializing..." % self)
 
-        max_year = self._max_version_to_year(self._get_max_version())
-        max_next_year = self._max_version_to_year(MaxEngine.max_release_r17) + 1
-        print "Year: ", max_year, " -- ", max_next_year
-        
-        if self._is_greater_max_2015():
-            
+        if self._get_max_version() > MaxEngine.MAXIMUM_SUPPORTED_VERSION:
             # Untested max version
             msg = ("Shotgun Pipeline Toolkit!\n\n"
                    "The Shotgun Pipeline Toolkit has not yet been fully tested with 3ds Max versions greater then 2015. "
@@ -53,7 +48,7 @@ class MaxEngine(sgtk.platform.Engine):
             
             # Display warning dialog
             max_year = self._max_version_to_year(self._get_max_version())
-            max_next_year = self._max_version_to_year(MaxEngine.max_release_r17) + 1
+            max_next_year = self._max_version_to_year(MaxEngine.MAXIMUM_SUPPORTED_VERSION) + 1
             if max_year >= self.get_setting("compatibility_dialog_min_version", max_next_year):
                 MaxPlus.Core.EvalMAXScript('messagebox "Warning - ' + msg + '" title: "Shotgun Warning"')
 
@@ -177,8 +172,11 @@ class MaxEngine(sgtk.platform.Engine):
     ##########################################################################################
     # MaxPlus SDK Patching
 
-    """ Version Id for 3dsmax 2015 Taken from Max Sdk (not currently available in maxplus) """
-    max_release_r17 = 17000
+    # Version Id for 3dsmax 2015 Taken from Max Sdk (not currently available in maxplus)
+    MAX_RELEASE_R17 = 17000
+
+    # Latest supported max version
+    MAXIMUM_SUPPORTED_VERSION = 17000
 
     def _max_version_to_year(self, version):
         """ 
@@ -197,7 +195,9 @@ class MaxEngine(sgtk.platform.Engine):
         return (((x)>>16)&0xffff)
 
     def _get_max_version(self):
-        """ Returns Version integer of max release number. """
+        """
+        Returns Version integer of max release number.
+        """
         # 3dsMax Version returns a number which contains max version, sdk version, etc...
         versionId = MaxPlus.Application.Get3DSMAXVersion()
         
@@ -207,9 +207,7 @@ class MaxEngine(sgtk.platform.Engine):
         return version
 
     def _is_at_least_max_2015(self):
-        """ Returns True if current Max version is equal or above 3ds max 2015 """        
-        return self._get_max_version() >= MaxEngine.max_release_r17
-
-    def _is_greater_max_2015(self):
-        """ Returns True if current Max version is equal or above 3ds max 2015 """        
-        return self._get_max_version() > MaxEngine.max_release_r17
+        """
+        Returns True if current Max version is equal or above 3ds max 2015
+        """
+        return self._get_max_version() >= MaxEngine.MAX_RELEASE_R17
