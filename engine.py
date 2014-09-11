@@ -14,6 +14,7 @@ import os
 import sys
 import time
 import thread
+import math
 
 import sgtk
 import MaxPlus
@@ -37,6 +38,10 @@ class MaxEngine(sgtk.platform.Engine):
         Init the engine
         """
         self.log_debug("%s: Initializing..." % self)
+
+        max_year = self._max_version_to_year(self._get_max_version())
+        max_next_year = self._max_version_to_year(MaxEngine.max_release_r17) + 1
+        print "Year: ", max_year, " -- ", max_next_year
         
         if self._is_greater_max_2015():
             
@@ -47,7 +52,9 @@ class MaxEngine(sgtk.platform.Engine):
                    "instability.  Please report any issues you see to toolkitsupport@shotgunsoftware.com")
             
             # Display warning dialog
-            if self._get_max_version() >= self.get_setting("compatibility_dialog_min_version", MaxEngine.max_release_r18):
+            max_year = self._max_version_to_year(self._get_max_version())
+            max_next_year = self._max_version_to_year(MaxEngine.max_release_r17) + 1
+            if max_year >= self.get_setting("compatibility_dialog_min_version", max_next_year):
                 MaxPlus.Core.EvalMAXScript('messagebox "Warning - ' + msg + '" title: "Shotgun Warning"')
 
             # and log the warning
@@ -173,9 +180,14 @@ class MaxEngine(sgtk.platform.Engine):
     """ Version Id for 3dsmax 2015 Taken from Max Sdk (not currently available in maxplus) """
     max_release_r17 = 17000
 
-    """ Version Id for 3dsmax 2016 Taken from Max Sdk (not currently available in maxplus) """
-    max_release_r18 = 18000
-    
+    def _max_version_to_year(self, version):
+        """ 
+        Get the max year from the max release version. 
+        Note that while 17000 is 2015, 17900 would be 2016 alpha
+        """
+        year = 2000 + (math.ceil(version / 1000.0) - 2)
+        return year
+
     def _get_max_release(self, x): 
         """
         Macro to get 3ds max release from version id 
