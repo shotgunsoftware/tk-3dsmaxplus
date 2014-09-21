@@ -15,11 +15,13 @@ import os
 import sys
 import traceback
 import uuid
+import hashlib
 
 from PySide import QtGui
 from PySide import QtCore
 
 import MaxPlus
+import sgtk
 
 class MenuGenerator(object):
     """
@@ -31,50 +33,40 @@ class MenuGenerator(object):
         :param engine: Engine to get commands from.
         """
         self._engine = engine
-        self._menu_handle = None
-        self._menu_builder = None
+        # Maxscript variable name for context menu
+        self._ctx_var = '_ctx_builder'
 
-    @staticmethod
-    def CreateUniqueMenuItem(category, name, fxn):
-        """ 
-        Creates a new action item from the category, name, function and objct to use as hash for the menu.
-        :param category: Menu category (string) to create the item in
-        :param name: Menu name (string) to create the item in
-        :param fxn: Function callback on menu item clicked
-        :returns: Menu item
-        """
-        uniqueId = uuid.uuid4()
-
-        item = MaxPlus._CustomActionItem(category, name, fxn)
+        # Mascript variable name for Shotgun main menu
+        self._menu_var = '_menu_builder'
         
-        # MaxPlus normally uses a hash based on menu name, which isn't good for reloading menus. Using a globally unique id instead
-        item.GetId = lambda : hash(uniqueId)
-
-        MaxPlus.ActionFactory.CustomActionItems.append(item)
-        return MaxPlus.ActionFactory.CreateFromAbstract(item)
+        # Need a globally available version of this object for maxscript action callbacks to be able to refer to python objects
+        sgtk.MaxScriptObjects = {}
 
     def create_menu(self):
         """
         Create the Shotgun Menu
         """
 
+        # Create the main menu
+        MaxPlus.Core.EvalMAXScript('''
+        -- clear the old menu
+        oldMenu = menuMan.findMenu "Shotgun"
+        if oldMenu != undefined then menuMan.unregisterMenu oldMenu
+
+        -- create the main menu
+        {main_menu_var} = menuMan.createMenu "Shotgun"
+        '''.format(main_menu_var=self._menu_var))
+
         # enumerate all items and create menu objects for them
         cmd_items = []
         for (cmd_name, cmd_details) in self._engine.commands.items():
             cmd_items.append(AppCommand(cmd_name, cmd_details))
 
-        # clear the old menu
-        if MaxPlus.MenuManager.MenuExists(u"Shotgun"):
-            MaxPlus.MenuManager.UnregisterMenu(u"Shotgun")
-        self._menu_builder = MaxPlus.MenuBuilder(u"Shotgun")
-
         # start with context menu
         ctx_builder = self._create_context_builder()
         for cmd in cmd_items:
             if cmd.get_type() == "context_menu":
-                cmd.add_to_builder(ctx_builder)
-        self._menu_builder.AddSubMenu(ctx_builder.Create())
-        self._menu_builder.AddSeparator()
+                cmd.add_to_menu(self._ctx_var)
 
         # now favourites
         for fav in self._engine.get_setting("menu_favourites"):
@@ -84,11 +76,15 @@ class MenuGenerator(object):
             for cmd in cmd_items:
                 if cmd.get_app_instance_name() == app_instance_name and cmd.name == menu_name:
                     # found our match!
-                    cmd.add_to_builder(self._menu_builder)
+                    cmd.add_to_menu(self._menu_var)
                     # mark as a favourite item
                     cmd.favourite = True
-        self._menu_builder.AddSeparator()
 
+        MaxPlus.Core.EvalMAXScript('''
+        separator = menuMan.createSeparatorItem()
+        {main_menu_var}.addItem separator -1
+        '''.format(main_menu_var=self._menu_var))
+        
         # now go through all of the menu items.
         # separate them out into various sections
         commands_by_app = {}
@@ -107,9 +103,15 @@ class MenuGenerator(object):
         # now add all apps to main menu
         self._add_app_menu(commands_by_app)
 
-        # and add it to Max, second to last which should be before Help
-        main = MaxPlus.MenuManager.GetMainMenu()
-        self._menu_handle = self._menu_builder.Create(main, main.NumItems - 1)
+        # Create the main menu
+        MaxPlus.Core.EvalMAXScript('''
+        -- Add main menu to Max, second to last which should be before Help
+        mainMenuBar = menuMan.getMainMenuBar()
+        subMenuIndex = mainMenuBar.numItems() - 1
+        subMenuItem = menuMan.createSubMenuItem "Shotgun" {main_menu_var}
+        mainMenuBar.addItem subMenuItem subMenuIndex
+        menuMan.updateMenuBar()
+        '''.format(main_menu_var=self._menu_var))
 
     def _create_context_builder(self):
         """
@@ -119,18 +121,25 @@ class MenuGenerator(object):
         ctx = self._engine.context
         ctx_name = str(ctx)
 
-        # create the builder object
-        if MaxPlus.MenuManager.MenuExists(ctx_name):
-            MaxPlus.MenuManager.UnregisterMenu(ctx_name)
-        ctx_builder = MaxPlus.MenuBuilder(ctx_name)
+        MaxPlus.Core.EvalMAXScript('''
+        -- clear the old menu
+        oldMenu = menuMan.findMenu "{ctx_name}"
+        if oldMenu != undefined then menuMan.unregisterMenu oldMenu
 
-        action = MenuGenerator.CreateUniqueMenuItem("Jump to Shotgun", "Jump to Shotgun", self._jump_to_sg)
-        ctx_builder.AddItem(action)
-        action = MenuGenerator.CreateUniqueMenuItem("Jump to File System", "Jump to File System", self._jump_to_fs)
-        ctx_builder.AddItem(action)
-        ctx_builder.AddSeparator()
+        -- create the contex menu
+        {menu_var} = menuMan.createMenu "{ctx_name}"
+        '''.format(ctx_name=ctx_name, menu_var=self._ctx_var))
 
-        return ctx_builder
+        MaxScript.add_action_to_menu(self._jump_to_sg, 'Jump to Shotgun', self._ctx_var)
+        MaxScript.add_action_to_menu(self._jump_to_fs, 'Jump to File System', self._ctx_var)
+
+        MaxPlus.Core.EvalMAXScript('''
+        separator = menuMan.createSeparatorItem()
+        {menu_var}.addItem separator -1
+
+        subMenuItem = menuMan.createSubMenuItem "ctx_builder" {menu_var}
+        {main_menu_var}.addItem subMenuItem -1
+        '''.format(menu_var=self._ctx_var, main_menu_var=self._menu_var))
 
     def _jump_to_sg(self):
         """
@@ -173,22 +182,30 @@ class MenuGenerator(object):
             if len(commands_by_app[app_name]) > 1:
                 # more than one menu entry fort his app
                 # make a sub menu and put all items in the sub menu
-                if MaxPlus.MenuManager.MenuExists(app_name):
-                    MaxPlus.MenuManager.UnregisterMenu(app_name)
-                builder = MaxPlus.MenuBuilder(app_name)
+                MaxPlus.Core.EvalMAXScript('''
+                -- clear the old menu
+                oldMenu = menuMan.findMenu "{menu_name}"
+                if oldMenu != undefined then menuMan.unregisterMenu oldMenu
 
+                -- create the menu so that we can add items to it
+                _builder = menuMan.createMenu "{menu_name}"
+                '''.format(menu_name=app_name))
+                
                 for cmd in commands_by_app[app_name]:
-                    cmd.add_to_builder(builder)
+                    cmd.add_to_menu('_builder')
 
-                menu = builder.Create()
-                self._menu_builder.AddSubMenu(menu)
+                # Add menu to main shotgun menu
+                MaxPlus.Core.EvalMAXScript('''
+                appMenuItem = menuMan.createSubMenuItem "ShotgunMenu" _builder
+                {main_menu_var}.addItem appMenuItem -1
+                '''.format(main_menu_var=self._menu_var))
             else:
                 # this app only has a single entry.
                 # display that on the menu
                 cmd_obj = commands_by_app[app_name][0]
                 if not cmd_obj.favourite:
                     # skip favourites since they are alreay on the menu
-                    cmd_obj.add_to_builder(self._menu_builder)
+                    cmd_obj.add_to_menu(self._menu_var)
 
 
 class AppCommand(object):
@@ -263,7 +280,7 @@ class AppCommand(object):
         """
         return self.properties.get("type", "default")
 
-    def _caller(self):
+    def execute(self):
         """
         Delegate method for this command
         """
@@ -276,10 +293,64 @@ class AppCommand(object):
             if engine is not None:
                 engine.log_error("Failed to call command '%s'. '%s'!" % (self.name, tb))
 
-    def add_to_builder(self, builder):
+    def add_to_menu(self, menu_var):
         """
-        Add a menu item for this command to the given builder.
-        :param builder: Builder to add menu item to.
+        Add command to menu
+        :param menu_var: MaxScript menu variable name to add menu item to.
         """
-        action = MenuGenerator.CreateUniqueMenuItem(self.name, self.name, self._caller)
-        builder.AddItem(action)
+        MaxScript.add_action_to_menu(self.execute, self.name, menu_var)
+
+class MaxScript:
+    """
+    MaxScript/Python Bridge Utilities
+    """
+
+    @staticmethod
+    def add_action_to_menu(callback, action_name, menu_var):
+        """
+        Add a menu item for this command to the given MaxScript menu variable name.
+        :param menu_var: MaxScript menu variable name to add menu item to.
+        """
+        obj = callback.im_self
+        method_name = callback.__name__
+
+        # Need a globally available version of this object for maxscript action callbacks to be able to refer to python objects
+        object_id = str(id(obj))
+        sgtk.MaxScriptObjects[object_id] = obj
+
+        """
+        Macro name must not have any strange characters (spaces, dash, etc..)
+        These macro script will be saved as files by 3ds max on the user folder.
+        Therefore, the name is made unique to the action name so as to not pollute the usermacro folder
+        with new macro for the same action every time shotgun is reloaded.
+        eg: 'Publish...' action will always re-use the same MacroScript.
+        """
+        macro_name = 'sg_' + hashlib.md5(action_name).hexdigest()
+
+        MaxPlus.Core.EvalMAXScript('''
+        -- Create MacroScript that will callback to our python object
+        macroScript {macro_name}
+        category: "Shotgun Menu Actions"
+        tooltip: "{action_name}"
+        (
+	        on execute do 
+	        (
+                -- Note: Keeping the indent is important here
+		        python.execute "
+import sgtk
+if '{object_id}' in sgtk.MaxScriptObjects:
+    command_object = sgtk.MaxScriptObjects['{object_id}']
+    command_object.{command_name}()
+else:
+    print 'Shotgun Error: Failed to find Action command in MAXScript callback for action [{action_name}]!'
+                "
+	        )
+        )
+
+        -- Add menu item using previous MacroScript action
+        action = menuMan.createActionItem "{macro_name}" "Shotgun Menu Actions"
+        action.setUseCustomTitle true
+        action.setTitle("{action_name}")
+        {menu_var}.addItem action -1
+        '''.format(macro_name=macro_name, menu_var=menu_var, action_name=action_name, 
+                   object_id=object_id, command_name=method_name))
