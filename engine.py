@@ -110,8 +110,8 @@ class MaxEngine(sgtk.platform.Engine):
         Called when all apps have initialized
         """
         # set up menu handler
-        tk_3dsmax = self.import_module("tk_3dsmaxplus")
-        self._menu_generator = tk_3dsmax.MenuGenerator(self)
+        self.tk_3dsmax = self.import_module("tk_3dsmaxplus")
+        self._menu_generator = self.tk_3dsmax.MenuGenerator(self)
         self._menu_generator.create_menu()
 
     def destroy_engine(self):
@@ -168,6 +168,27 @@ class MaxEngine(sgtk.platform.Engine):
         dialog.installEventFilter(self.windowFocus)
 
         return dialog
+
+    def show_modal(self, title, bundle, widget_class, *args, **kwargs):
+        if not self.has_ui:
+            self.log_error("Sorry, this environment does not support UI display! Cannot show "
+                           "the requested window '%s'." % title)
+            return None
+        
+        # Disable 'Shotgun' background menu while modals are there.
+        self.tk_3dsmax.MaxScript.disable_menu('Shotgun', 'sgtk_main_menu_items')
+
+        # create the dialog:
+        dialog, widget = self._create_dialog_with_widget(title, bundle, widget_class, *args, **kwargs)
+        
+        # finally launch it, modal state
+        status = dialog.exec_()
+
+        # Re-enable 'Shotgun' background menu after modal has been closed
+        self.tk_3dsmax.MaxScript.enable_menu('Shotgun', 'sgtk_main_menu_items')
+        
+        # lastly, return the instantiated widget
+        return (status, widget)
 
     ##########################################################################################
     # MaxPlus SDK Patching

@@ -1,0 +1,164 @@
+# Copyright (c) 2013 Shotgun Software Inc.
+# 
+# CONFIDENTIAL AND PROPRIETARY
+# 
+# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit 
+# Source Code License included in this distribution package. See LICENSE.
+# By accessing, using, copying or modifying this work you indicate your 
+# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights 
+# not expressly granted therein are reserved by Shotgun Software Inc.
+
+"""
+MaxScript handling for 3ds Max
+"""
+import hashlib
+import MaxPlus
+
+class MaxScript:
+    """
+    MaxScript/Python Bridge Utilities
+    """
+
+    @staticmethod
+    def add_to_menu(from_menu_var, to_menu_var, from_menu_name):
+        """
+        Add given menu to another menu
+        :param from_menu_var: MaxScript variable name of menu to add from
+        :param to_menu_var: MaxScript variable name of menu to add to
+        :param from_menu_name: Name of menu item to give to MaxScript
+        """
+
+        MaxPlus.Core.EvalMAXScript('''
+            sgtk_menu_sub_item = menuMan.createSubMenuItem "{from_menu_name}" {from_menu_var}
+            {to_menu_var}.addItem sgtk_menu_sub_item -1
+        '''.format(from_menu_var=from_menu_var, to_menu_var=to_menu_var, from_menu_name=from_menu_name))
+
+    @staticmethod
+    def create_menu(menu_name, menu_var):
+        """
+        Create a menu
+        :param menu_name: String name of menu to create
+        "param menu_var: MaxScript variable name in which the menu will be created
+        """
+
+        MaxPlus.Core.EvalMAXScript('''
+            -- clear the old menu
+            sgtk_oldMenu = menuMan.findMenu "{menu_name}"
+            if sgtk_oldMenu != undefined then menuMan.unregisterMenu sgtk_oldMenu
+
+            -- create the main menu
+            {menu_var} = menuMan.createMenu "{menu_name}"
+        '''.format(menu_var=menu_var, menu_name=menu_name))
+
+    @staticmethod
+    def add_separator(menu_var):
+        """
+        Add separator to a menu
+        :param menu_var: MaxScript variable name of the menu to add separator into
+        """
+
+        MaxPlus.Core.EvalMAXScript('''
+            sgtk_menu_separator = menuMan.createSeparatorItem()
+            {menu_var}.addItem sgtk_menu_separator -1
+        '''.format(menu_var=menu_var))
+
+    @staticmethod
+    def add_to_main_menu_bar(menu_var, menu_name):
+        """
+        Add menu to 3ds max's main menu bar
+        :param menu_var: MaxScript variable name of menu to add to the main menu bar
+        :param menu_name: String name of the menu to add
+        """
+
+        MaxPlus.Core.EvalMAXScript('''
+            -- Add main menu to Max, second to last which should be before Help
+            sgtk_main_menu_bar = menuMan.getMainMenuBar()
+            sgtk_sub_menu_index = sgtk_main_menu_bar.numItems() - 1
+            sgtk_sub_menu_item = menuMan.createSubMenuItem "{menu_name}" {menu_var}
+            sgtk_main_menu_bar.addItem sgtk_sub_menu_item sgtk_sub_menu_index
+            menuMan.updateMenuBar()
+        '''.format(menu_var=menu_var, menu_name=menu_name))
+
+    @staticmethod
+    def add_action_to_menu(callback, action_name, menu_var, engine):
+        """
+        Add a menu item for this command to the given MaxScript menu variable name.
+        :param callback: Callback function to call with this action
+        :param action_name: Name of the action, as will appear to the user
+        :param menu_var: MaxScript menu variable name to add menu item to.
+        :param engine: Current engine where the action can be globally linked back to.
+        """
+        obj = callback.im_self
+        method_name = callback.__name__
+
+        # Need a globally available version of this object for maxscript action callbacks to be able to refer to python objects
+        object_id = str(id(obj))
+        engine.maxscript_objects[object_id] = obj
+
+        """
+        Macro name must not have any strange characters (spaces, dash, etc..)
+        These macro script will be saved as files by 3ds max on the user folder.
+        Therefore, the name is made unique to the action name so as to not pollute the usermacro folder
+        with new macro for the same action every time shotgun is reloaded.
+        eg: 'Publish...' action will always re-use the same MacroScript.
+        """
+        macro_name = 'sg_' + hashlib.md5(action_name).hexdigest()
+
+        # Creating python code separately as it needs to have no indentation in the macroscript
+        python_code = (
+            "import sgtk\n"
+            "engine = sgtk.platform.current_engine()\n"
+            "if '{object_id}' in engine.maxscript_objects:\n"
+            "    command_object = engine.maxscript_objects['{object_id}']\n"
+            "    command_object.{command_name}()\n"
+            "else:\n"
+            "    engine.log_error('Shotgun Error: Failed to find Action command in MAXScript callback for action [{action_name}]!')\n"
+        ).format(object_id=object_id, command_name=method_name, action_name=action_name)
+
+        MaxPlus.Core.EvalMAXScript('''
+            -- Create MacroScript that will callback to our python object
+            macroScript {macro_name}
+            category: "Shotgun Menu Actions"
+            tooltip: "{action_name}"
+            (
+	            on execute do 
+	            (
+                    -- Note: Keeping the indent is important here
+		            python.execute "{python_code}"
+	            )
+            )
+
+            -- Add menu item using previous MacroScript action
+            sgtk_menu_action = menuMan.createActionItem "{macro_name}" "Shotgun Menu Actions"
+            sgtk_menu_action.setUseCustomTitle true
+            sgtk_menu_action.setTitle("{action_name}")
+            {menu_var}.addItem sgtk_menu_action -1
+        '''.format(macro_name=macro_name, menu_var=menu_var, action_name=action_name, python_code=python_code))
+
+    @staticmethod
+    def disable_menu(menu_name, menu_items_var):
+        MaxPlus.Core.EvalMAXScript('''
+            sgtk_main_menu = menuMan.findMenu("{menu_name}")
+            {menu_items_var} = #()
+            for i = 1 to sgtk_main_menu.numItems() do
+            (
+	            {menu_items_var}[i] = sgtk_main_menu.getItem i
+            )
+
+            for i = 1 to {menu_items_var}.count do
+            (
+	            sgtk_main_menu.removeItem {menu_items_var}[i]
+            )
+            menuMan.updateMenuBar()
+        '''.format(menu_name=menu_name, menu_items_var=menu_items_var))
+
+    @staticmethod
+    def enable_menu(menu_name, menu_items_var):
+        MaxPlus.Core.EvalMAXScript('''
+            sgtk_main_menu = menuMan.findMenu("{menu_name}")
+            for i = 1 to {sgtk_main_menu_items}.count do
+            (
+	            sgtk_main_menu.addItem {sgtk_main_menu_items}[i] i
+            )
+            menuMan.updateMenuBar()
+        '''.format(menu_name=menu_name, menu_items_var=menu_items_var))
