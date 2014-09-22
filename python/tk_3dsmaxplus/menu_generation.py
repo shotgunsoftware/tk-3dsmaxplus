@@ -26,6 +26,10 @@ import sgtk
 class MenuGenerator(object):
     """
     Menu generation functionality for 3dsmax
+    
+    Actual menu creation is done through MaxScript to prevent a crash with modal dialogs.
+    The crash happens if a modal dialog is open and a user clicks on a menu with action items 
+    that directly call python code
     """
     def __init__(self, engine):
         """
@@ -33,13 +37,13 @@ class MenuGenerator(object):
         :param engine: Engine to get commands from.
         """
         self._engine = engine
+
         # Maxscript variable name for context menu
         self._ctx_var = '_ctx_builder'
-
         # Mascript variable name for Shotgun main menu
         self._menu_var = '_menu_builder'
         
-        # Need a globally available version of this object for maxscript action callbacks to be able to refer to python objects
+        # Need a globally available object for maxscript action callbacks to be able to refer to python objects
         sgtk.MaxScriptObjects = {}
 
     def create_menu(self):
