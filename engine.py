@@ -114,6 +114,8 @@ class MaxEngine(sgtk.platform.Engine):
         self._menu_generator = self.tk_3dsmax.MenuGenerator(self)
         self._menu_generator.create_menu()
 
+        self.tk_3dsmax.MaxScript.enable_menu()
+
     def destroy_engine(self):
         """
         Called when the engine is shutting down
@@ -176,7 +178,7 @@ class MaxEngine(sgtk.platform.Engine):
             return None
         
         # Disable 'Shotgun' background menu while modals are there.
-        self.tk_3dsmax.MaxScript.disable_menu('Shotgun', 'sgtk_main_menu_items')
+        self.tk_3dsmax.MaxScript.disable_menu()
 
         # create the dialog:
         dialog, widget = self._create_dialog_with_widget(title, bundle, widget_class, *args, **kwargs)
@@ -185,7 +187,7 @@ class MaxEngine(sgtk.platform.Engine):
         status = dialog.exec_()
 
         # Re-enable 'Shotgun' background menu after modal has been closed
-        self.tk_3dsmax.MaxScript.enable_menu('Shotgun', 'sgtk_main_menu_items')
+        self.tk_3dsmax.MaxScript.enable_menu()
         
         # lastly, return the instantiated widget
         return (status, widget)

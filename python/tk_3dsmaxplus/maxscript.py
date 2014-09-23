@@ -123,8 +123,17 @@ class MaxScript:
             (
 	            on execute do 
 	            (
-                    -- Note: Keeping the indent is important here
-		            python.execute "{python_code}"
+                    /* 
+                        This is a workaround to prevent any menu item from being used while there is a modal window.
+                        Calling any python code from maxscript while there is a modal window (even 'a = 1') results in
+                        an exception.
+
+                        Note: Keeping the indent is important here
+                    */
+                    if sgtk_main_menu_enabled == True then
+		                python.execute "{python_code}"
+                    else
+                        print "Shotgun Warning: You need to close the current window dialog before using any more commands."
 	            )
             )
 
@@ -136,29 +145,19 @@ class MaxScript:
         '''.format(macro_name=macro_name, menu_var=menu_var, action_name=action_name, python_code=python_code))
 
     @staticmethod
-    def disable_menu(menu_name, menu_items_var):
-        MaxPlus.Core.EvalMAXScript('''
-            sgtk_main_menu = menuMan.findMenu("{menu_name}")
-            {menu_items_var} = #()
-            for i = 1 to sgtk_main_menu.numItems() do
-            (
-	            {menu_items_var}[i] = sgtk_main_menu.getItem i
-            )
+    def disable_menu():
+        """
+        Sets a flag so that menu actions will not be called, which would throw exceptions. See add_action_menu's macroscript
+        comments for details.
 
-            for i = 1 to {menu_items_var}.count do
-            (
-	            sgtk_main_menu.removeItem {menu_items_var}[i]
-            )
-            menuMan.updateMenuBar()
-        '''.format(menu_name=menu_name, menu_items_var=menu_items_var))
+        This is used to disable actions while a modal window is opened.
+        """
+        MaxPlus.Core.EvalMAXScript("sgtk_main_menu_enabled = False")
 
     @staticmethod
-    def enable_menu(menu_name, menu_items_var):
-        MaxPlus.Core.EvalMAXScript('''
-            sgtk_main_menu = menuMan.findMenu("{menu_name}")
-            for i = 1 to {sgtk_main_menu_items}.count do
-            (
-	            sgtk_main_menu.addItem {sgtk_main_menu_items}[i] i
-            )
-            menuMan.updateMenuBar()
-        '''.format(menu_name=menu_name, menu_items_var=menu_items_var))
+    def enable_menu():
+        """
+        Sets a flag so that menu actions can be called.
+        """
+
+        MaxPlus.Core.EvalMAXScript("sgtk_main_menu_enabled = True")
