@@ -38,7 +38,7 @@ class MaxScript:
         """
         Create a menu
         :param menu_name: String name of menu to create
-        "param menu_var: MaxScript variable name in which the menu will be created
+        :param menu_var: MaxScript variable name in which the menu will be created
         """
 
         MaxPlus.Core.EvalMAXScript('''
