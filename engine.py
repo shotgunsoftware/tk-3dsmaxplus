@@ -172,23 +172,30 @@ class MaxEngine(sgtk.platform.Engine):
         return dialog
 
     def show_modal(self, title, bundle, widget_class, *args, **kwargs):
+        from sgtk.platform.qt import QtGui
+
         if not self.has_ui:
             self.log_error("Sorry, this environment does not support UI display! Cannot show "
                            "the requested window '%s'." % title)
             return None
-        
-        # Disable 'Shotgun' background menu while modals are there.
-        self.tk_3dsmax.MaxScript.disable_menu()
 
-        # create the dialog:
-        dialog, widget = self._create_dialog_with_widget(title, bundle, widget_class, *args, **kwargs)
-        
-        # finally launch it, modal state
-        status = dialog.exec_()
+        status = QtGui.QDialog.DialogCode.Rejected
 
-        # Re-enable 'Shotgun' background menu after modal has been closed
-        self.tk_3dsmax.MaxScript.enable_menu()
+        try:
+            # Disable 'Shotgun' background menu while modals are there.
+            self.tk_3dsmax.MaxScript.disable_menu()
+
+            # create the dialog:
+            dialog, widget = self._create_dialog_with_widget(title, bundle, widget_class, *args, **kwargs)
         
+            # finally launch it, modal state
+            status = dialog.exec_()
+        except:
+            self.log_error("Exception in modal window.")
+        finally:
+            # Re-enable 'Shotgun' background menu after modal has been closed
+            self.tk_3dsmax.MaxScript.enable_menu()
+
         # lastly, return the instantiated widget
         return (status, widget)
 
