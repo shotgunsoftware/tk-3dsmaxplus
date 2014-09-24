@@ -130,7 +130,7 @@ class MaxScript:
 
                         Note: Keeping the indent is important here
                     */
-                    if sgtk_main_menu_enabled == True then
+                    if (sgtk_main_menu_enabled != undefined and sgtk_main_menu_enabled == True) then
 		                python.execute "{python_code}"
                     else
                         print "Shotgun Warning: You need to close the current window dialog before using any more commands."
