@@ -192,9 +192,9 @@ class MaxEngine(sgtk.platform.Engine):
             status = dialog.exec_()
         except:
             self.log_error("Exception in modal window.")
-
-        # Re-enable 'Shotgun' background menu after modal has been closed
-        self.tk_3dsmax.MaxScript.enable_menu()
+        finally:
+            # Re-enable 'Shotgun' background menu after modal has been closed
+            self.tk_3dsmax.MaxScript.enable_menu()
 
         # lastly, return the instantiated widget
         return (status, widget)
