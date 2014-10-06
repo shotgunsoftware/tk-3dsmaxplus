@@ -201,6 +201,8 @@ class AppCommand(object):
         if engine is None:
             return None
 
+        app_instance = self.properties["app"]
+
         for (app_instance_name, app_instance_obj) in engine.apps.items():
             if app_instance_obj == app_instance:
                 # found our app!
