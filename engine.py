@@ -199,6 +199,35 @@ class MaxEngine(sgtk.platform.Engine):
         # lastly, return the instantiated widget
         return (status, widget)
 
+    def set_safe_modal_dialog(self, dialog):
+        """
+        Sets the dialog to be used by safe_modal_maxscript_eval
+        :param dialog: Dialog to preserve
+        """
+        self._safe_dialog = dialog
+
+    def safe_modal_maxscript_eval(self, func):
+        """
+        If running a command from a dialog also creates a 3ds max window, this function tries to
+        ensure that the dialog will stay alive and that the max modal window becomes visible
+        and unobstructed.
+
+        :param script: Function to execute (partial/lambda)
+        """
+
+        # Merge operation can cause dialogs to pop up, and closing the window results in a crash.
+        # So hide the window while the operations are occuring.
+        self._safe_dialog.hide()
+        self._safe_dialog.lower()
+
+        func()
+
+        # Restore the window after the operation is completed
+        self._safe_dialog.show()
+        self._safe_dialog.activateWindow() # for Windows
+        self._safe_dialog.raise_()  # for MacOS
+
+
     ##########################################################################################
     # MaxPlus SDK Patching
 
