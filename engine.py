@@ -66,6 +66,8 @@ class MaxEngine(sgtk.platform.Engine):
             # and log the warning
             self.log_warning(msg)
 
+        self._safe_dialog = []
+
     def pre_app_init(self):
         """
         Called before all apps have initialized
@@ -80,16 +82,22 @@ class MaxEngine(sgtk.platform.Engine):
         QtCore.QCoreApplication.addLibraryPath(pluginsPath)
 
         # Window focus objects are used to enable proper keyboard handling by the window instead of 3dsMax's accelerators
-        class WindowFocus(QtCore.QObject):
+        engine = self
+        class DialogEvents(QtCore.QObject):
             def eventFilter(self, obj, event):
                 if event.type() == QtCore.QEvent.WindowActivate:
                     MaxPlus.CUI.DisableAccelerators()
                 elif event.type() == QtCore.QEvent.WindowDeactivate:
                     MaxPlus.CUI.EnableAccelerators()
 
+                # Remove from tracked dialogs
+                if event.type() == QtCore.QEvent.Close:
+                    if obj in engine._safe_dialog: 
+                        engine._safe_dialog.remove(obj)
+
                 return False;
 
-        self.windowFocus = WindowFocus()
+        self.dialogEvents = DialogEvents()
 
         # set up a qt style sheet
         # note! - try to be smart about this and only run
@@ -105,12 +113,15 @@ class MaxEngine(sgtk.platform.Engine):
             curr_stylesheet += "\n\n QDialog#TankDialog > QWidget { background-color: #343434; }\n\n"        
             qt_app_obj.setStyleSheet(curr_stylesheet) 
 
+        # This needs to be present for apps as it will be used in show_dialog when perforce asks for login
+        # info very early on.
+        self.tk_3dsmax = self.import_module("tk_3dsmaxplus")
+
     def post_app_init(self):
         """
         Called when all apps have initialized
         """
         # set up menu handler
-        self.tk_3dsmax = self.import_module("tk_3dsmaxplus")
         self._menu_generator = self.tk_3dsmax.MenuGenerator(self)
         self._menu_generator.create_menu()
 
@@ -167,9 +178,13 @@ class MaxEngine(sgtk.platform.Engine):
         reach window dialogs (such as keyboard events).
         """
         dialog = sgtk.platform.Engine._create_dialog(self, title, bundle, widget, parent)
-        dialog.installEventFilter(self.windowFocus)
+        dialog.installEventFilter(self.dialogEvents)
+
+        # Add to tracked dialogs (will be removed in eventFilter)
+        self._safe_dialog.append(dialog)
 
         return dialog
+
 
     def show_modal(self, title, bundle, widget_class, *args, **kwargs):
         from sgtk.platform.qt import QtGui
@@ -199,14 +214,7 @@ class MaxEngine(sgtk.platform.Engine):
         # lastly, return the instantiated widget
         return (status, widget)
 
-    def set_safe_modal_dialog(self, dialog):
-        """
-        Sets the dialog to be used by safe_modal_maxscript_eval
-        :param dialog: Dialog to preserve
-        """
-        self._safe_dialog = dialog
-
-    def safe_modal_maxscript_eval(self, func):
+    def safe_dialog_exec(self, func):
         """
         If running a command from a dialog also creates a 3ds max window, this function tries to
         ensure that the dialog will stay alive and that the max modal window becomes visible
@@ -215,17 +223,18 @@ class MaxEngine(sgtk.platform.Engine):
         :param script: Function to execute (partial/lambda)
         """
 
-        # Merge operation can cause dialogs to pop up, and closing the window results in a crash.
-        # So hide the window while the operations are occuring.
-        self._safe_dialog.hide()
-        self._safe_dialog.lower()
+        # Merge operation can cause max dialogs to pop up, and closing the window results in a crash.
+        # So keep alive and hide all of our qt windows while this type of operations are occuring.
+        for dialog in self._safe_dialog:
+            dialog.hide()
+            dialog.lower()
 
-        func()
+            func()
 
-        # Restore the window after the operation is completed
-        self._safe_dialog.show()
-        self._safe_dialog.activateWindow() # for Windows
-        self._safe_dialog.raise_()  # for MacOS
+            # Restore the window after the operation is completed
+            dialog.show()
+            dialog.activateWindow() # for Windows
+            dialog.raise_()  # for MacOS
 
 
     ##########################################################################################
