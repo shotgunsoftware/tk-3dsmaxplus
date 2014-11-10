@@ -65,7 +65,7 @@ class MenuGenerator(object):
                 cmd.add_to_menu(self._ctx_var, self._engine)
 
         # now favourites
-        for fav in self._engine.get_setting("menu_favourites"):
+        for fav in self._engine.get_setting("menu_favourites", []):
             app_instance_name = fav["app_instance"]
             menu_name = fav["name"]
             # scan through all menu items
