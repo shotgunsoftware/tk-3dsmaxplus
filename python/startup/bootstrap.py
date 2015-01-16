@@ -28,9 +28,9 @@ def bootstrap_sgtk():
         resources = os.path.join(os.path.dirname(__file__), "..", "..", "resources")
         ssl_path = os.path.join(resources, "ssl_fix")
         sys.path.insert(0, ssl_path)
-        path = os.environ.get("PATH", "")
-        path += ";%s" % ssl_path
-        os.environ["PATH"] = path
+        path_parts = os.environ.get("PYTHONPATH", "").split(";")
+        path_parts = [ssl_path] + path_parts
+        os.environ["PYTHONPATH"] = ";".join(path_parts)
     else:
         error("Shotgun: Unknown platform - cannot setup ssl")
         return

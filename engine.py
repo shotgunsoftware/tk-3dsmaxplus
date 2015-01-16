@@ -32,11 +32,13 @@ class MaxEngine(sgtk.platform.Engine):
 
     ##########################################################################################
     # init
-    
-    def init_engine(self):
+
+    def pre_app_init(self):
         """
-        Init the engine
+        Called before all apps have initialized
         """
+        from sgtk.platform.qt import QtCore
+
         self.log_debug("%s: Initializing..." % self)
 
         if self._get_max_version() > MaxEngine.MAXIMUM_SUPPORTED_VERSION:
@@ -67,14 +69,6 @@ class MaxEngine(sgtk.platform.Engine):
             self.log_warning(msg)
 
         self._safe_dialog = []
-
-    def pre_app_init(self):
-        """
-        Called before all apps have initialized
-        """
-        from sgtk.platform.qt import QtCore
-
-        self.log_debug("%s: Initializing..." % self)
 
         # Add image formats since max doesn't add the correct paths by default and jpeg won't be readable
         maxpath = QtCore.QCoreApplication.applicationDirPath()
@@ -147,28 +141,35 @@ class MaxEngine(sgtk.platform.Engine):
         :param msg: The message string to log
         """
         if self.get_setting("debug_logging", False):
-            print "[%-13s] Shotgun Debug: %s" % (str(time.time()), msg)
+            self.execute_in_main_thread(self._print_output, "Shotgun Debug: %s" % msg)
 
     def log_info(self, msg):
         """
         Info logging.
         :param msg: The message string to log
         """
-        print "[%-13s] Shotgun Info: %s" % (str(time.time()), msg)
+        self.execute_in_main_thread(self._print_output, "Shotgun Info: %s" % msg)
 
     def log_warning(self, msg):
         """
         Warning logging.
         :param msg: The message string to log
         """
-        print "[%-13s] Shotgun Warning: %s" % (str(time.time()), msg)
+        self.execute_in_main_thread(self._print_output, "Shotgun Warning: %s" % msg)
 
     def log_error(self, msg):
         """
         Error logging.
         :param msg: The message string to log
         """
-        print "[%-13s] Shotgun Error: %s" % (str(time.time()), msg)
+        self.execute_in_main_thread(self._print_output, "Shotgun Error: %s" % msg)
+
+    def _print_output(self, msg):
+        """
+        Print the specified message to the maxscript listener
+        :param msg: The message string to print
+        """
+        print "[%-13s] %s" % (str(time.time()), msg)
 
     ##########################################################################################
     # Engine
