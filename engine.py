@@ -72,7 +72,14 @@ class MaxEngine(sgtk.platform.Engine):
         """
         Called before all apps have initialized
         """
+        # unicode characters returned by the shotgun api need to be converted
+        # to display correctly in all of the app windows
         from sgtk.platform.qt import QtCore
+
+        # tell QT to interpret C strings as utf-8
+        utf8 = QtCore.QTextCodec.codecForName("utf-8")
+        QtCore.QTextCodec.setCodecForCStrings(utf8)
+        self.log_debug("set utf-8 codec for widget text")
 
         self.log_debug("%s: Initializing..." % self)
 
