@@ -44,7 +44,7 @@ class MaxEngine(sgtk.platform.Engine):
         if self._get_max_version() > MaxEngine.MAXIMUM_SUPPORTED_VERSION:
             # Untested max version
             msg = ("Shotgun Pipeline Toolkit!\n\n"
-                   "The Shotgun Pipeline Toolkit has not yet been fully tested with 3ds Max versions greater then 2015. "
+                   "The Shotgun Pipeline Toolkit has not yet been fully tested with 3ds Max versions greater then 2016. "
                    "You can continue to use the Toolkit but you may experience bugs or "
                    "instability.  Please report any issues you see to toolkitsupport@shotgunsoftware.com")
             
@@ -245,7 +245,7 @@ class MaxEngine(sgtk.platform.Engine):
     MAX_RELEASE_R17 = 17000
 
     # Latest supported max version
-    MAXIMUM_SUPPORTED_VERSION = 17000
+    MAXIMUM_SUPPORTED_VERSION = 18000
 
     def _max_version_to_year(self, version):
         """ 
