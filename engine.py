@@ -46,7 +46,7 @@ class MaxEngine(sgtk.platform.Engine):
             msg = ("Shotgun Pipeline Toolkit!\n\n"
                    "The Shotgun Pipeline Toolkit has not yet been fully tested with 3ds Max versions greater then 2016. "
                    "You can continue to use the Toolkit but you may experience bugs or "
-                   "instability.  Please report any issues you see to toolkitsupport@shotgunsoftware.com")
+                   "instability.  Please report any issues you see to support@shotgunsoftware.com")
             
             # Display warning dialog
             max_year = self._max_version_to_year(self._get_max_version())
