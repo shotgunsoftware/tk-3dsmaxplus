@@ -141,28 +141,28 @@ class MaxEngine(sgtk.platform.Engine):
         :param msg: The message string to log
         """
         if self.get_setting("debug_logging", False):
-            self.execute_in_main_thread(self._print_output, "Shotgun Debug: %s" % msg)
+            self.async_execute_in_main_thread(self._print_output, "Shotgun Debug: %s" % msg)
 
     def log_info(self, msg):
         """
         Info logging.
         :param msg: The message string to log
         """
-        self.execute_in_main_thread(self._print_output, "Shotgun Info: %s" % msg)
+        self.async_execute_in_main_thread(self._print_output, "Shotgun Info: %s" % msg)
 
     def log_warning(self, msg):
         """
         Warning logging.
         :param msg: The message string to log
         """
-        self.execute_in_main_thread(self._print_output, "Shotgun Warning: %s" % msg)
+        self.async_execute_in_main_thread(self._print_output, "Shotgun Warning: %s" % msg)
 
     def log_error(self, msg):
         """
         Error logging.
         :param msg: The message string to log
         """
-        self.execute_in_main_thread(self._print_output, "Shotgun Error: %s" % msg)
+        self.async_execute_in_main_thread(self._print_output, "Shotgun Error: %s" % msg)
 
     def _print_output(self, msg):
         """
