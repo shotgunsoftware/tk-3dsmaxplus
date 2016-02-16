@@ -57,9 +57,6 @@ class MaxEngine(sgtk.platform.Engine):
             # and log the warning
             self.log_warning(msg)
 
-        self.log_user_attribute_metric("3ds Max Plus version",
-            self._max_version_to_year(self._get_max_version())
-
         elif not self._is_at_least_max_2015():
             # Unsupported max version
             msg = ("Shotgun Pipeline Toolkit!\n\n"
@@ -70,6 +67,13 @@ class MaxEngine(sgtk.platform.Engine):
                            
             # and log the warning
             self.log_warning(msg)
+
+        try:
+            self.log_user_attribute_metric("3ds Max Plus version",
+                self._max_version_to_year(self._get_max_version())
+        except:
+            # ignore all errors. ex: using a core that doesn't support metrics
+            pass
 
         self._safe_dialog = []
 

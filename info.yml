@@ -51,4 +51,3 @@ description: "Shotgun Integration in 3ds Max Plus"
 requires_shotgun_version:
 requires_core_version: "v0.16.35"
 
-# XXX will require core version with metrics logging
