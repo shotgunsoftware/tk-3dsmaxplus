@@ -180,19 +180,31 @@ class MaxEngine(sgtk.platform.Engine):
 
     ##########################################################################################
     # Engine
+
     def _create_dialog(self, title, bundle, widget, parent):
         """
         Parent function override to install event filtering in order to allow proper events to
         reach window dialogs (such as keyboard events).
         """
         dialog = sgtk.platform.Engine._create_dialog(self, title, bundle, widget, parent)
+
+        # Attaching the dialog to Max is a matter of whether this is a new
+        # enough version of 3ds Max. Anything short of 2016 SP1 is going to
+        # fail here with an AttributeError, so we can just catch that and
+        # continue on without the new-style parenting.
+        try:
+            self.log_debug("Attempting to attach dialog to 3ds Max...")
+            MaxPlus.AttachQWidgetToMax(dialog)
+            self.log_debug("AttachQWidgetToMax successful.")
+        except AttributeError:
+            self.log_debug("AttachQWidgetToMax not available in this version of 3ds Max.")
+
         dialog.installEventFilter(self.dialogEvents)
 
         # Add to tracked dialogs (will be removed in eventFilter)
         self._safe_dialog.append(dialog)
 
         return dialog
-
 
     def show_modal(self, title, bundle, widget_class, *args, **kwargs):
         from sgtk.platform.qt import QtGui
