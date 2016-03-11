@@ -29,6 +29,7 @@ class MaxEngine(sgtk.platform.Engine):
         """
         # proceed about your business
         sgtk.platform.Engine.__init__(self, *args, **kwargs)
+        self._parent_to_max = True
 
     ##########################################################################################
     # init
@@ -192,12 +193,13 @@ class MaxEngine(sgtk.platform.Engine):
         # enough version of 3ds Max. Anything short of 2016 SP1 is going to
         # fail here with an AttributeError, so we can just catch that and
         # continue on without the new-style parenting.
-        try:
-            self.log_debug("Attempting to attach dialog to 3ds Max...")
-            MaxPlus.AttachQWidgetToMax(dialog)
-            self.log_debug("AttachQWidgetToMax successful.")
-        except AttributeError:
-            self.log_debug("AttachQWidgetToMax not available in this version of 3ds Max.")
+        if self._parent_to_max:
+            try:
+                self.log_debug("Attempting to attach dialog to 3ds Max...")
+                mr = MaxPlus.AttachQWidgetToMax(dialog)
+                self.log_debug("AttachQWidgetToMax successful.")
+            except AttributeError:
+                self.log_debug("AttachQWidgetToMax not available in this version of 3ds Max.")
 
         dialog.installEventFilter(self.dialogEvents)
 
@@ -221,12 +223,23 @@ class MaxEngine(sgtk.platform.Engine):
             self.tk_3dsmax.MaxScript.disable_menu()
 
             # create the dialog:
-            dialog, widget = self._create_dialog_with_widget(title, bundle, widget_class, *args, **kwargs)
+            try:
+                self._parent_to_max = False
+                dialog, widget = self._create_dialog_with_widget(
+                    title,
+                    bundle,
+                    widget_class,
+                    *args, **kwargs
+                )
+            finally:
+                self._parent_to_max = True
         
             # finally launch it, modal state
             status = dialog.exec_()
-        except:
-            self.log_error("Exception in modal window.")
+        except Exception:
+            import traceback
+            tb = traceback.format_exc()
+            self.log_error("Exception in modal window: %s" % tb)
         finally:
             # Re-enable 'Shotgun' background menu after modal has been closed
             self.tk_3dsmax.MaxScript.enable_menu()
