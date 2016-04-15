@@ -91,19 +91,6 @@ class MaxScript:
         obj = callback.im_self
         method_name = callback.__name__
 
-        # Need a globally available version of this object for maxscript
-        # action callbacks to be able to refer to python objects.
-        hash_name = action_name
-
-        # This won't be visible to the user, so we'll go the ugly route
-        # to resolve conflicts and just append underscores until we get
-        # a unique key. Ultimately, this is just covering what should be
-        # the very rare edge case of having two menu actions with the
-        # same name. That would be bad practice, in my opinion, but since
-        # it is possible we will handle it.
-        while hash_name in engine.maxscript_objects:
-            hash_name += "_"
-
         # Note that we're using the action name because we need these
         # macros to reference things consistently across sessions. Sadly,
         # if a second, concurrent, 3ds Max session is launched, Toolkit
@@ -115,6 +102,17 @@ class MaxScript:
         # This means that if we have anything referenced from the macro
         # that is not available in the first session, the action will
         # fail.
+        hash_name = action_name
+
+        # This won't be visible to the user, so we'll go the ugly route
+        # to resolve conflicts and just append underscores until we get
+        # a unique key. Ultimately, this is just covering what should be
+        # the very rare edge case of having two menu actions with the
+        # same name. That would be bad practice, in my opinion, but since
+        # it is possible we will handle it.
+        while hash_name in engine.maxscript_objects:
+            hash_name += "_"
+
         engine.maxscript_objects[hash_name] = obj
         
 
