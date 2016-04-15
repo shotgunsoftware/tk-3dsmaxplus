@@ -91,9 +91,32 @@ class MaxScript:
         obj = callback.im_self
         method_name = callback.__name__
 
-        # Need a globally available version of this object for maxscript action callbacks to be able to refer to python objects
-        object_id = str(id(obj))
-        engine.maxscript_objects[object_id] = obj
+        # Need a globally available version of this object for maxscript
+        # action callbacks to be able to refer to python objects.
+        hash_name = action_name
+
+        # This won't be visible to the user, so we'll go the ugly route
+        # to resolve conflicts and just append underscores until we get
+        # a unique key. Ultimately, this is just covering what should be
+        # the very rare edge case of having two menu actions with the
+        # same name. That would be bad practice, in my opinion, but since
+        # it is possible we will handle it.
+        while hash_name in engine.maxscript_objects:
+            hash_name += "_"
+
+        # Note that we're using the action name because we need these
+        # macros to reference things consistently across sessions. Sadly,
+        # if a second, concurrent, 3ds Max session is launched, Toolkit
+        # will build the Shotgun menu in that session and Max will write
+        # that updated menu layout to disk for the user, because it thinks
+        # that needs to persist across sessions. This causes us problems
+        # in the first session, then, because Max looks up what macro to
+        # run from the xml stored on disk when the action is triggered.
+        # This means that if we have anything referenced from the macro
+        # that is not available in the first session, the action will
+        # fail.
+        engine.maxscript_objects[hash_name] = obj
+        
 
         """
         Macro name must not have any strange characters (spaces, dash, etc..)
@@ -108,12 +131,12 @@ class MaxScript:
         python_code = (
             "import sgtk\n"
             "engine = sgtk.platform.current_engine()\n"
-            "if '{object_id}' in engine.maxscript_objects:\n"
-            "    command_object = engine.maxscript_objects['{object_id}']\n"
+            "if '{hash_name}' in engine.maxscript_objects:\n"
+            "    command_object = engine.maxscript_objects['{hash_name}']\n"
             "    command_object.{command_name}()\n"
             "else:\n"
             "    engine.log_error('Shotgun Error: Failed to find Action command in MAXScript callback for action [{action_name}]!')\n"
-        ).format(object_id=object_id, command_name=method_name, action_name=action_name)
+        ).format(hash_name=hash_name, command_name=method_name, action_name=action_name)
 
         MaxPlus.Core.EvalMAXScript('''
             -- Create MacroScript that will callback to our python object
