@@ -32,6 +32,16 @@ class MaxEngine(sgtk.platform.Engine):
         self._parent_to_max = True
 
     ##########################################################################################
+    # properties
+
+    @property
+    def context_change_allowed(self):
+        """
+        Tells the core API that context changes are allowed by this engine.
+        """
+        return True
+
+    ##########################################################################################
     # init
 
     def pre_app_init(self):
@@ -124,6 +134,21 @@ class MaxEngine(sgtk.platform.Engine):
         Called when all apps have initialized
         """
         # set up menu handler
+        self._menu_generator = self.tk_3dsmax.MenuGenerator(self)
+        self._menu_generator.create_menu()
+
+        self.tk_3dsmax.MaxScript.enable_menu()
+
+    def post_context_change(self, old_context, new_context):
+        """
+        Handles necessary processing after a context change has been completed
+        successfully.
+
+        :param old_context: The previous context.
+        :param new_context: The current, new context.
+        """
+        # Replacing the menu will cause the old one to be removed
+        # and the new one put into its place.
         self._menu_generator = self.tk_3dsmax.MenuGenerator(self)
         self._menu_generator.create_menu()
 
@@ -258,17 +283,33 @@ class MaxEngine(sgtk.platform.Engine):
 
         # Merge operation can cause max dialogs to pop up, and closing the window results in a crash.
         # So keep alive and hide all of our qt windows while this type of operations are occuring.
+        from sgtk.platform.qt import QtGui
+        toggle_map = dict()
+
         for dialog in self._safe_dialog:
-            dialog.hide()
-            dialog.lower()
+            needs_toggling = dialog.isVisible()
+            toggle_map[dialog] = needs_toggling
 
+            if needs_toggling:
+                self.log_debug("Toggling dialog off: %r" % dialog)
+                dialog.hide()
+                dialog.lower()
+                QtGui.QApplication.processEvents()
+            else:
+                self.log_debug("Dialog is already hidden: %r" % dialog)
+
+        try:
             func()
+        finally:
+            for dialog in self._safe_dialog:
+                needs_toggling = toggle_map[dialog]
 
-            # Restore the window after the operation is completed
-            dialog.show()
-            dialog.activateWindow() # for Windows
-            dialog.raise_()  # for MacOS
-
+                if needs_toggling:
+                    # Restore the window after the operation is completed
+                    self.log_debug("Toggling dialog on: %r" % dialog)
+                    dialog.show()
+                    dialog.activateWindow() # for Windows
+                    dialog.raise_()  # for MacOS
 
     ##########################################################################################
     # MaxPlus SDK Patching
