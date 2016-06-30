@@ -284,14 +284,14 @@ class MaxEngine(sgtk.platform.Engine):
         # Merge operation can cause max dialogs to pop up, and closing the window results in a crash.
         # So keep alive and hide all of our qt windows while this type of operations are occuring.
         from sgtk.platform.qt import QtGui
-        toggle_map = dict()
+        toggled = []
 
         for dialog in self._safe_dialog:
             needs_toggling = dialog.isVisible()
-            toggle_map[dialog] = needs_toggling
 
             if needs_toggling:
                 self.log_debug("Toggling dialog off: %r" % dialog)
+                toggled.append(dialog)
                 dialog.hide()
                 dialog.lower()
                 QtGui.QApplication.processEvents()
@@ -301,15 +301,12 @@ class MaxEngine(sgtk.platform.Engine):
         try:
             func()
         finally:
-            for dialog in self._safe_dialog:
-                needs_toggling = toggle_map[dialog]
-
-                if needs_toggling:
-                    # Restore the window after the operation is completed
-                    self.log_debug("Toggling dialog on: %r" % dialog)
-                    dialog.show()
-                    dialog.activateWindow() # for Windows
-                    dialog.raise_()  # for MacOS
+            for dialog in toggled:
+                # Restore the window after the operation is completed
+                self.log_debug("Toggling dialog on: %r" % dialog)
+                dialog.show()
+                dialog.activateWindow() # for Windows
+                dialog.raise_()  # for MacOS
 
     ##########################################################################################
     # MaxPlus SDK Patching
