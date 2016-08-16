@@ -76,7 +76,7 @@ engines:
             filters: {}
 
     compatibility_dialog_min_version: 2017
-    debug_logging: true
+    debug_logging: false
     location:
       version: v0.1.16
       type: app_store
