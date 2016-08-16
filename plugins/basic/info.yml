@@ -11,7 +11,7 @@
 # values required by all plugins
 base_configuration:
   type: baked
-  name: ./config
+  path: ./config
 
 entry_point: "basic"
 

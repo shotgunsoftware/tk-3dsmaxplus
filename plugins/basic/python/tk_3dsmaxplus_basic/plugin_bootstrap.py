@@ -33,11 +33,11 @@ def bootstrap_toolkit(root_path):
     toolkit_mgr = sgtk.bootstrap.ToolkitManager()
     toolkit_mgr.entry_point = manifest.entry_point
     toolkit_mgr.base_configuration = manifest.base_configuration
-    toolkit_mgr.bundle_cache_fallback_paths = [os.path.join(root_path, "bundle_cache_root")]
+    toolkit_mgr.bundle_cache_fallback_paths = [os.path.join(root_path, "bundle_cache")]
 
     sgtk_logger.info("Starting the 3dsmaxplus engine.")
 
-    toolkit_mgr.bootstrap_engine("tk-3dsmax", entity=None)
+    toolkit_mgr.bootstrap_engine("tk-3dsmaxplus", entity=None)
 
 
 def shutdown_toolkit():
