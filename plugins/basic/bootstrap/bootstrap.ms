@@ -19,8 +19,12 @@ fn bootstrapToolkit = (
     -- and then pass control to python which will handle the rest
     -- of the bootstrap.
 
-    -- figure out the python folder
-    plugin_root_folder = getFilenamePath(getSourceFileName())
+    -- figure out plugin root path
+    bootstrap_folder = getFilenamePath(getSourceFileName())
+    plugin_root_folder = pathConfig.appendPath bootstrap_folder ".."
+    plugin_root_folder = pathConfig.convertPathToAbsolute plugin_root_folder
+
+    -- figure out where our python bootstrap is
     python_folder = pathConfig.appendPath plugin_root_folder "python"
 
     -- switch slash direction to prevent escaping issues later on
