@@ -1,0 +1,8 @@
+
+
+
+QLabel {
+    font-family: "Open Sans";
+    background-color: none;
+    border:none;
+}
