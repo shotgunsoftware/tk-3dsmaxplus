@@ -137,7 +137,7 @@ class MaxEngine(sgtk.platform.Engine):
         # on disk. This is very useful for development work,
         if self.get_setting("qss_watcher", False):
             self._qss_watcher = QtCore.QFileSystemWatcher(
-                [os.path.join(self.disk_location, constants.BUNDLE_STYLESHEET_FILE)],
+                [os.path.join(self.disk_location, sgtk.platform.constants.BUNDLE_STYLESHEET_FILE)],
             )
 
             self._qss_watcher.fileChanged.connect(self.reload_qss)
