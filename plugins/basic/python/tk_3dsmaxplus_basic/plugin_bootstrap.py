@@ -11,7 +11,7 @@
 import os
 import sys
 
-from sgtk_plugin_basic import manifest
+from sgtk_plugin_basic_3dsmax import manifest
 
 def bootstrap_toolkit(root_path):
 
@@ -31,9 +31,9 @@ def bootstrap_toolkit(root_path):
 
     # create boostrap manager
     toolkit_mgr = sgtk.bootstrap.ToolkitManager()
-    toolkit_mgr.entry_point = manifest.entry_point
-    toolkit_mgr.base_configuration = manifest.base_configuration
-    toolkit_mgr.bundle_cache_fallback_paths = [os.path.join(root_path, "bundle_cache")]
+
+    # pass the manager to the manifest for basic init
+    manifest.initialize_manager(toolkit_mgr, root_path)
 
     sgtk_logger.info("Starting the 3dsmaxplus engine.")
 

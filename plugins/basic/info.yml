@@ -13,7 +13,7 @@ base_configuration:
   type: baked
   path: ./config
 
-entry_point: "basic"
+plugin_id: "basic.3dsmax"
 
 # recommended values that all plugins should
 # specify by convention, unless there is good reason not to
