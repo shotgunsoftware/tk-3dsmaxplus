@@ -11,7 +11,10 @@ not expressly granted therein are reserved by Shotgun Software Inc.
 */
 
 QLabel {
-    font-family: "Open Sans";
-    background-color: none;
+    /*
+    Setting the border to none. Max 2017's styling causes our labels to
+    have solid backgrounds, and oddly enough it's their border settings
+    that are the culprit.
+    */
     border: none;
 }
