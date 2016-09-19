@@ -119,7 +119,10 @@ class MaxEngine(sgtk.platform.Engine):
         curr_stylesheet = qt_app_obj.styleSheet()
 
         if "toolkit 3dsmax style extension" not in curr_stylesheet:
-            self._initialize_dark_look_and_feel()
+            # If we're in pre-2017 Max then we need to handle our own styling. Otherwise
+            # we just inherit from Max.
+            if self._max_version_to_year(self._get_max_version()) < 2017:
+                self._initialize_dark_look_and_feel()
 
             curr_stylesheet += "\n\n /* toolkit 3dsmax style extension */ \n\n"
             curr_stylesheet += "\n\n QDialog#TankDialog > QWidget { background-color: #343434; }\n\n"        
@@ -128,6 +131,16 @@ class MaxEngine(sgtk.platform.Engine):
         # This needs to be present for apps as it will be used in show_dialog when perforce asks for login
         # info very early on.
         self.tk_3dsmax = self.import_module("tk_3dsmaxplus")
+
+        # The "qss_watcher" setting causes us to monitor the engine's
+        # style.qss file and re-apply it on the fly when it changes
+        # on disk. This is very useful for development work,
+        if self.get_setting("qss_watcher", False):
+            self._qss_watcher = QtCore.QFileSystemWatcher(
+                [os.path.join(self.disk_location, sgtk.platform.constants.BUNDLE_STYLESHEET_FILE)],
+            )
+
+            self._qss_watcher.fileChanged.connect(self.reload_qss)
 
     def post_app_init(self):
         """
@@ -231,7 +244,21 @@ class MaxEngine(sgtk.platform.Engine):
         # Add to tracked dialogs (will be removed in eventFilter)
         self._safe_dialog.append(dialog)
 
+        # Apply the engine-level stylesheet.
+        self._apply_external_styleshet(self, dialog)
+
         return dialog
+
+    def reload_qss(self):
+        """
+        Causes the style.qss file that comes with the tk-rv engine to
+        be re-applied to all dialogs that the engine has previously
+        launched.
+        """
+        self.log_warning("Reloading engine QSS...")
+        for dialog in self.created_qt_dialogs:
+            self._apply_external_styleshet(self, dialog)
+            dialog.update()
 
     def show_modal(self, title, bundle, widget_class, *args, **kwargs):
         from sgtk.platform.qt import QtGui
@@ -315,7 +342,7 @@ class MaxEngine(sgtk.platform.Engine):
     MAX_RELEASE_R17 = 17000
 
     # Latest supported max version
-    MAXIMUM_SUPPORTED_VERSION = 18000
+    MAXIMUM_SUPPORTED_VERSION = 19000
 
     def _max_version_to_year(self, version):
         """ 
