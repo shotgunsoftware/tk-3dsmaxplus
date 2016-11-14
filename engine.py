@@ -132,6 +132,16 @@ class MaxEngine(sgtk.platform.Engine):
         # info very early on.
         self.tk_3dsmax = self.import_module("tk_3dsmaxplus")
 
+        # The "qss_watcher" setting causes us to monitor the engine's
+        # style.qss file and re-apply it on the fly when it changes
+        # on disk. This is very useful for development work,
+        if self.get_setting("qss_watcher", False):
+            self._qss_watcher = QtCore.QFileSystemWatcher(
+                [os.path.join(self.disk_location, sgtk.platform.constants.BUNDLE_STYLESHEET_FILE)],
+            )
+
+            self._qss_watcher.fileChanged.connect(self.reload_qss)
+
     def post_app_init(self):
         """
         Called when all apps have initialized
@@ -234,7 +244,21 @@ class MaxEngine(sgtk.platform.Engine):
         # Add to tracked dialogs (will be removed in eventFilter)
         self._safe_dialog.append(dialog)
 
+        # Apply the engine-level stylesheet.
+        self._apply_external_styleshet(self, dialog)
+
         return dialog
+
+    def reload_qss(self):
+        """
+        Causes the style.qss file that comes with the tk-rv engine to
+        be re-applied to all dialogs that the engine has previously
+        launched.
+        """
+        self.log_warning("Reloading engine QSS...")
+        for dialog in self.created_qt_dialogs:
+            self._apply_external_styleshet(self, dialog)
+            dialog.update()
 
     def show_modal(self, title, bundle, widget_class, *args, **kwargs):
         from sgtk.platform.qt import QtGui
@@ -318,7 +342,7 @@ class MaxEngine(sgtk.platform.Engine):
     MAX_RELEASE_R17 = 17000
 
     # Latest supported max version
-    MAXIMUM_SUPPORTED_VERSION = 18000
+    MAXIMUM_SUPPORTED_VERSION = 19000
 
     def _max_version_to_year(self, version):
         """ 
