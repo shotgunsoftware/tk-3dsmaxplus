@@ -27,7 +27,7 @@ def bootstrap_toolkit(root_path):
 
     sgtk_logger = sgtk.LogManager.get_logger("plugin")
 
-    sgtk_logger.debug("Booting up plugin with manifest %s" % manifest.BUILD_INFO)
+    sgtk_logger.debug("Booting up toolkit plugin.")
 
     # create boostrap manager
     toolkit_mgr = sgtk.bootstrap.ToolkitManager()
