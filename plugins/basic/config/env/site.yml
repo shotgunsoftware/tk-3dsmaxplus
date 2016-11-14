@@ -16,10 +16,8 @@ description: Apps and Engines when toolkit is run from outside a project.
 # By default make the non-project side of the desktop engine available
 
 engines:
-
   tk-3dsmaxplus:
     apps:
-
       tk-multi-loader2:
         action_mappings:
           3dsmax Scene: [import, reference]
@@ -45,7 +43,7 @@ engines:
           hierarchy: [project, entity, content]
         filter_publishes_hook: '{self}/filter_publishes.py'
         location:
-          version: v1.11.2
+          version: v1.11.3
           type: app_store
           name: tk-multi-loader2
         menu_name: Load
@@ -54,7 +52,7 @@ engines:
 
       tk-multi-shotgunpanel:
         location:
-          version: v1.2.6
+          version: v1.2.11
           type: app_store
           name: tk-multi-shotgunpanel
         shotgun_fields_hook: '{self}/shotgun_fields.py'
@@ -74,24 +72,21 @@ engines:
             - quicktime_clipboard
             - sequence_clipboard
             filters: {}
-
     compatibility_dialog_min_version: 2017
     debug_logging: false
     location:
-      version: v0.1.16
+      version: v0.2.0
       type: app_store
       name: tk-3dsmaxplus
     menu_favourites: []
-
-
 frameworks:
   tk-framework-qtwidgets_v2.x.x:
     location:
-      version: v2.4.3
+      version: v2.5.10
       type: app_store
       name: tk-framework-qtwidgets
   tk-framework-shotgunutils_v4.x.x:
     location:
-      version: v4.4.0
+      version: v4.4.14
       type: app_store
       name: tk-framework-shotgunutils
