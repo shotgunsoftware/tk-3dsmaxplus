@@ -221,6 +221,45 @@ class MaxEngine(sgtk.platform.Engine):
     ##########################################################################################
     # Engine
 
+    def show_panel(self, panel_id, title, bundle, widget_class, *args, **kwargs):
+        from sgtk.platform.qt import QtCore, QtGui
+
+        self.log_debug("Begin showing panel %s" % panel_id)
+
+        if self._max_version_to_year(self._get_max_version()) <= 2017:
+            # Qt docking is supported in version 2018 and later.
+            self.log_warning("Panel functionality not implemented. Falling back to showing "
+                             "panel '%s' in a modeless dialog" % panel_id)
+            return self.show_dialog(title, bundle, widget_class, *args, **kwargs)
+
+        dock_widget_id = 'dock_widget_' + panel_id
+        main_window = MaxPlus.GetQMaxMainWindow()
+        dock_widget = main_window.findChild(QtGui.QDockWidget, dock_widget_id)
+
+        if dock_widget is None:
+            widget_instance = widget_class(*args, **kwargs)
+            widget_instance.setParent(self._get_dialog_parent())
+            widget_instance.setObjectName(panel_id)
+
+            dock_widget = QtGui.QDockWidget(title, parent=main_window)
+            dock_widget.setObjectName(dock_widget_id)
+            dock_widget.setWidget(widget_instance)
+            self.log_debug('Created new dock widget %s' % dock_widget_id)
+        else:
+            widget_instance = dock_widget.widget()
+            self.log_debug('Found existing dock widget %s' % dock_widget_id)
+
+        # apply external stylesheet
+        self._apply_external_stylesheet(bundle, widget_instance)
+
+        if main_window.restoreDockWidget(dock_widget) is False:
+            main_window.addDockWidget(QtCore.Qt.RightDockWidgetArea, dock_widget)
+            dock_widget.setFloating(True)
+
+        dock_widget.show()
+
+        return widget_instance
+
     def _create_dialog(self, title, bundle, widget, parent):
         """
         Parent function override to install event filtering in order to allow proper events to
