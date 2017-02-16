@@ -15,12 +15,8 @@ import os
 import sys
 import traceback
 
-from PySide import QtGui
-from PySide import QtCore
+from sgtk.platform.qt import QtCore, QtGui
 from .maxscript import MaxScript
-
-import MaxPlus
-import sgtk
 
 class MenuGenerator(object):
     """
