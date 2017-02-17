@@ -55,7 +55,7 @@ class MaxEngine(sgtk.platform.Engine):
         if self._get_max_version() > MaxEngine.MAXIMUM_SUPPORTED_VERSION:
             # Untested max version
             msg = ("Shotgun Pipeline Toolkit!\n\n"
-                   "The Shotgun Pipeline Toolkit has not yet been fully tested with 3ds Max versions greater then 2016. "
+                   "The Shotgun Pipeline Toolkit has not yet been fully tested with 3ds Max versions greater than 2017. "
                    "You can continue to use the Toolkit but you may experience bugs or "
                    "instability.  Please report any issues you see to support@shotgunsoftware.com")
             
@@ -352,25 +352,18 @@ class MaxEngine(sgtk.platform.Engine):
         year = 2000 + (math.ceil(version / 1000.0) - 2)
         return year
 
-    def _get_max_release(self, x): 
-        """
-        Macro to get 3ds max release from version id 
-        (not currently present in MaxPlus, but found in max's c++ sdk)
-        :param x: 3ds max Version id
-        """
-        return (((x)>>16)&0xffff)
-
     def _get_max_version(self):
         """
         Returns Version integer of max release number.
         """
         # 3dsMax Version returns a number which contains max version, sdk version, etc...
-        versionId = MaxPlus.Application.Get3DSMAXVersion()
+        version_id = MaxPlus.Application.Get3DSMAXVersion()
         
         # Transform it to a version id
-        version = self._get_max_release(versionId)
+        # (Macro to get 3ds max release from version id)
+        version_number = (version_id >> 16) & 0xffff
 
-        return version
+        return version_number
 
     def _is_at_least_max_2015(self):
         """
