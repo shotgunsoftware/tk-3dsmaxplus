@@ -11,9 +11,7 @@
 A 3ds Max (2015+) engine for Toolkit that uses MaxPlus.
 """
 import os
-import sys
 import time
-import thread
 import math
 
 import sgtk
@@ -54,14 +52,17 @@ class MaxEngine(sgtk.platform.Engine):
 
         if self._get_max_version() > MaxEngine.MAXIMUM_SUPPORTED_VERSION:
             # Untested max version
+
+            highest_supported_version = self._max_version_to_year(MaxEngine.MAXIMUM_SUPPORTED_VERSION)
+
             msg = ("Shotgun Pipeline Toolkit!\n\n"
-                   "The Shotgun Pipeline Toolkit has not yet been fully tested with 3ds Max versions greater than 2017. "
-                   "You can continue to use the Toolkit but you may experience bugs or "
-                   "instability.  Please report any issues you see to support@shotgunsoftware.com")
+                   "The Shotgun Pipeline Toolkit has not yet been fully tested with 3ds Max versions greater than %s. "
+                   "You can continue to use the Toolkit but you may experience bugs or instability. "
+                   "Please report any issues you see to support@shotgunsoftware.com" % highest_supported_version)
             
             # Display warning dialog
             max_year = self._max_version_to_year(self._get_max_version())
-            max_next_year = self._max_version_to_year(MaxEngine.MAXIMUM_SUPPORTED_VERSION) + 1
+            max_next_year = highest_supported_version + 1
             if max_year >= self.get_setting("compatibility_dialog_min_version", max_next_year):
                 MaxPlus.Core.EvalMAXScript('messagebox "Warning - ' + msg + '" title: "Shotgun Warning"')
 
@@ -107,7 +108,7 @@ class MaxEngine(sgtk.platform.Engine):
                     if obj in engine._safe_dialog: 
                         engine._safe_dialog.remove(obj)
 
-                return False;
+                return False
 
         self.dialogEvents = DialogEvents()
 
@@ -342,7 +343,7 @@ class MaxEngine(sgtk.platform.Engine):
     MAX_RELEASE_R17 = 17000
 
     # Latest supported max version
-    MAXIMUM_SUPPORTED_VERSION = 19000
+    MAXIMUM_SUPPORTED_VERSION = 20000
 
     def _max_version_to_year(self, version):
         """ 
