@@ -14,7 +14,7 @@ import MaxPlus
 
 # the version of max when a working SSL python
 # started to be distributed with it.
-SSL_INCLUDED_VERSION = 19000
+SSL_INCLUDED_VERSION = 20000
 
 def error(msg):
     """
