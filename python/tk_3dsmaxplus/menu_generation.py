@@ -14,6 +14,7 @@ Menu handling for 3ds Max
 import os
 import sys
 import traceback
+import unicodedata
 
 from sgtk.platform.qt import QtCore, QtGui
 from .maxscript import MaxScript

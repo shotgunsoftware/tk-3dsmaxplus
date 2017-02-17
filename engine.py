@@ -11,9 +11,7 @@
 A 3ds Max (2015+) engine for Toolkit that uses MaxPlus.
 """
 import os
-import sys
 import time
-import thread
 import math
 
 import sgtk
@@ -54,14 +52,17 @@ class MaxEngine(sgtk.platform.Engine):
 
         if self._get_max_version() > MaxEngine.MAXIMUM_SUPPORTED_VERSION:
             # Untested max version
+
+            highest_supported_version = self._max_version_to_year(MaxEngine.MAXIMUM_SUPPORTED_VERSION)
+
             msg = ("Shotgun Pipeline Toolkit!\n\n"
-                   "The Shotgun Pipeline Toolkit has not yet been fully tested with 3ds Max versions greater then 2016. "
-                   "You can continue to use the Toolkit but you may experience bugs or "
-                   "instability.  Please report any issues you see to support@shotgunsoftware.com")
+                   "The Shotgun Pipeline Toolkit has not yet been fully tested with 3ds Max versions greater than %s. "
+                   "You can continue to use the Toolkit but you may experience bugs or instability. "
+                   "Please report any issues you see to support@shotgunsoftware.com" % highest_supported_version)
             
             # Display warning dialog
             max_year = self._max_version_to_year(self._get_max_version())
-            max_next_year = self._max_version_to_year(MaxEngine.MAXIMUM_SUPPORTED_VERSION) + 1
+            max_next_year = highest_supported_version + 1
             if max_year >= self.get_setting("compatibility_dialog_min_version", max_next_year):
                 MaxPlus.Core.EvalMAXScript('messagebox "Warning - ' + msg + '" title: "Shotgun Warning"')
 
@@ -107,7 +108,7 @@ class MaxEngine(sgtk.platform.Engine):
                     if obj in engine._safe_dialog: 
                         engine._safe_dialog.remove(obj)
 
-                return False;
+                return False
 
         self.dialogEvents = DialogEvents()
 
@@ -342,7 +343,7 @@ class MaxEngine(sgtk.platform.Engine):
     MAX_RELEASE_R17 = 17000
 
     # Latest supported max version
-    MAXIMUM_SUPPORTED_VERSION = 19000
+    MAXIMUM_SUPPORTED_VERSION = 20000
 
     def _max_version_to_year(self, version):
         """ 
@@ -352,25 +353,18 @@ class MaxEngine(sgtk.platform.Engine):
         year = 2000 + (math.ceil(version / 1000.0) - 2)
         return year
 
-    def _get_max_release(self, x): 
-        """
-        Macro to get 3ds max release from version id 
-        (not currently present in MaxPlus, but found in max's c++ sdk)
-        :param x: 3ds max Version id
-        """
-        return (((x)>>16)&0xffff)
-
     def _get_max_version(self):
         """
         Returns Version integer of max release number.
         """
         # 3dsMax Version returns a number which contains max version, sdk version, etc...
-        versionId = MaxPlus.Application.Get3DSMAXVersion()
+        version_id = MaxPlus.Application.Get3DSMAXVersion()
         
         # Transform it to a version id
-        version = self._get_max_release(versionId)
+        # (Macro to get 3ds max release from version id)
+        version_number = (version_id >> 16) & 0xffff
 
-        return version
+        return version_number
 
     def _is_at_least_max_2015(self):
         """

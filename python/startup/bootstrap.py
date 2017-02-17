@@ -12,6 +12,10 @@ import sys
 
 import MaxPlus
 
+# the version of max when a working SSL python
+# started to be distributed with it.
+SSL_INCLUDED_VERSION = 20000
+
 def error(msg):
     """
     Error Repost
@@ -19,18 +23,26 @@ def error(msg):
     """
     print "ERROR: %s" % msg
 
+
 def bootstrap_sgtk():
     """
     Bootstrap. This is called when preparing to launch by multi-launch.
     """
-    # use _ssl with fix for slowdown
     if sys.platform == "win32":
-        resources = os.path.join(os.path.dirname(__file__), "..", "..", "resources")
-        ssl_path = os.path.join(resources, "ssl_fix")
-        sys.path.insert(0, ssl_path)
-        path_parts = os.environ.get("PYTHONPATH", "").split(";")
-        path_parts = [ssl_path] + path_parts
-        os.environ["PYTHONPATH"] = ";".join(path_parts)
+
+        # get the version id from max
+        version_id = MaxPlus.Application.Get3DSMAXVersion()
+        version_number = (version_id >> 16) & 0xffff
+
+        if version_number < SSL_INCLUDED_VERSION:
+            # our version of 3dsmax does not have ssl included.
+            # patch this up by adding to the pythonpath
+            resources = os.path.join(os.path.dirname(__file__), "..", "..", "resources")
+            ssl_path = os.path.join(resources, "ssl_fix")
+            sys.path.insert(0, ssl_path)
+            path_parts = os.environ.get("PYTHONPATH", "").split(";")
+            path_parts = [ssl_path] + path_parts
+            os.environ["PYTHONPATH"] = ";".join(path_parts)
     else:
         error("Shotgun: Unknown platform - cannot setup ssl")
         return
