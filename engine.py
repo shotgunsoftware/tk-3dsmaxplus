@@ -221,6 +221,64 @@ class MaxEngine(sgtk.platform.Engine):
     ##########################################################################################
     # Engine
 
+    def show_panel(self, panel_id, title, bundle, widget_class, *args, **kwargs):
+        """
+        Docks an app widget in a 3dsmax panel.
+
+        :param panel_id: Unique identifier for the panel, as obtained by register_panel().
+        :param title: The title of the panel
+        :param bundle: The app, engine or framework object that is associated with this window
+        :param widget_class: The class of the UI to be constructed. This must derive from QWidget.
+
+        Additional parameters specified will be passed through to the widget_class constructor.
+
+        :returns: the created widget_class instance
+        """
+        from sgtk.platform.qt import QtCore, QtGui
+
+        self.log_debug("Begin showing panel %s" % panel_id)
+
+        if self._max_version_to_year(self._get_max_version()) <= 2017:
+            # Qt docking is supported in version 2018 and later.
+            self.log_warning("Panel functionality not implemented. Falling back to showing "
+                             "panel '%s' in a modeless dialog" % panel_id)
+            return super(MaxEngine, self).show_panel(panel_id, title, bundle, widget_class, *args, **kwargs)
+
+        dock_widget_id = "sgtk_dock_widget_" + panel_id
+        main_window = MaxPlus.GetQMaxMainWindow()
+        # Check if the dock widget wrapper already exists.
+        dock_widget = main_window.findChild(QtGui.QDockWidget, dock_widget_id)
+
+        if dock_widget is None:
+            # The dock widget wrapper cannot be found in the main window's
+            # children list so that means it has not been created yet, so create it.
+            widget_instance = widget_class(*args, **kwargs)
+            widget_instance.setParent(self._get_dialog_parent())
+            widget_instance.setObjectName(panel_id)
+
+            dock_widget = QtGui.QDockWidget(title, parent=main_window)
+            dock_widget.setObjectName(dock_widget_id)
+            dock_widget.setWidget(widget_instance)
+            self.log_debug("Created new dock widget %s" % dock_widget_id)
+        else:
+            # The dock widget wrapper already exists, so just get the
+            # shotgun panel from it.
+            widget_instance = dock_widget.widget()
+            self.log_debug("Found existing dock widget %s" % dock_widget_id)
+
+        # apply external stylesheet
+        self._apply_external_stylesheet(bundle, widget_instance)
+
+        if not main_window.restoreDockWidget(dock_widget):
+            # The dock widget cannot be restored from the main window's state,
+            # so dock it to the right dock area and make it float by default.
+            main_window.addDockWidget(QtCore.Qt.RightDockWidgetArea, dock_widget)
+            dock_widget.setFloating(True)
+
+        dock_widget.show()
+
+        return widget_instance
+
     def _create_dialog(self, title, bundle, widget, parent):
         """
         Parent function override to install event filtering in order to allow proper events to
