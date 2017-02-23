@@ -357,12 +357,16 @@ class MaxEngine(sgtk.platform.Engine):
         # enough version of 3ds Max. Anything short of 2016 SP1 is going to
         # fail here with an AttributeError, so we can just catch that and
         # continue on without the new-style parenting.
+        previous_parent = dialog.parent()
         if self._parent_to_max:
             try:
                 self.log_debug("Attempting to attach dialog to 3ds Max...")
-                mr = MaxPlus.AttachQWidgetToMax(dialog)
+                # widget must be parentless when calling MaxPlus.AttachQWidgetToMax
+                dialog.setParent(None)
+                MaxPlus.AttachQWidgetToMax(dialog)
                 self.log_debug("AttachQWidgetToMax successful.")
             except AttributeError:
+                dialog.setParent(previous_parent)
                 self.log_debug("AttachQWidgetToMax not available in this version of 3ds Max.")
 
         dialog.installEventFilter(self.dialogEvents)
