@@ -13,7 +13,6 @@ A 3ds Max (2015+) engine for Toolkit that uses MaxPlus.
 import os
 import time
 import math
-
 import sgtk
 import MaxPlus
 
@@ -143,15 +142,36 @@ class MaxEngine(sgtk.platform.Engine):
 
             self._qss_watcher.fileChanged.connect(self.reload_qss)
 
+    def _add_shotgun_menu(self):
+        """
+        Add Shotgun menu to the main menu bar.
+        """
+        self.log_debug("Adding the shotgun menu to the main menu bar.")
+        self._menu_generator.create_menu()
+        self.tk_3dsmax.MaxScript.enable_menu()
+
+    def _on_menus_loaded(self, code):
+        """
+        Called when receiving CuiMenusPostLoad from 3dsMax.
+
+        :param code: Notification code received
+        """
+        self._add_shotgun_menu()
+
     def post_app_init(self):
         """
         Called when all apps have initialized
         """
         # set up menu handler
         self._menu_generator = self.tk_3dsmax.MenuGenerator(self)
-        self._menu_generator.create_menu()
+        self._add_shotgun_menu()
 
-        self.tk_3dsmax.MaxScript.enable_menu()
+        try:
+            # Listen to the CuiMenusPostLoad notification in order to add
+            # our shotgun menu after workspace reset/switch.
+            MaxPlus.NotificationManager.Register(MaxPlus.NotificationCodes.CuiMenusPostLoad, self._on_menus_loaded)
+        except AttributeError:
+            self.log_debug("CuiMenusPostLoad notification code is not available in this version of MaxPlus.")
 
     def post_context_change(self, old_context, new_context):
         """
@@ -163,16 +183,15 @@ class MaxEngine(sgtk.platform.Engine):
         """
         # Replacing the menu will cause the old one to be removed
         # and the new one put into its place.
-        self._menu_generator = self.tk_3dsmax.MenuGenerator(self)
-        self._menu_generator.create_menu()
-
-        self.tk_3dsmax.MaxScript.enable_menu()
+        self._add_shotgun_menu()
 
     def destroy_engine(self):
         """
         Called when the engine is shutting down
         """
         self.log_debug('%s: Destroying...' % self)
+
+        MaxPlus.NotificationManager.Unregister(self._on_menus_loaded)
 
     ##########################################################################################
     # logging
