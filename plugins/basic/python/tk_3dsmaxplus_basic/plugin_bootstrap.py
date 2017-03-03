@@ -83,11 +83,25 @@ def bootstrap_toolkit(root_path):
     entity = toolkit_mgr.get_entity_from_environment()
     sgtk_logger.debug("Will launch the engine with entity: %s" % entity)
 
+    # set up a simple progress reporter
+    toolkit_mgr.progress_callback = progress_callback
+
     # start engine
-    # @todo - add bootstrap progress reporting
     sgtk_logger.info("Starting the 3dsmaxplus engine.")
     toolkit_mgr.bootstrap_engine("tk-3dsmaxplus", entity)
 
+    sgtk_logger.debug("Bootstrap complete.")
+
+def progress_callback(progress_value, message):
+    """
+    Called whenever toolkit reports progress.
+
+    :param progress_value: The current progress value as float number.
+                           values will be reported in incremental order
+                           and always in the range 0.0 to 1.0
+    :param message:        Progress message string
+    """
+    print "Shotgun: %s" % message
 
 def shutdown_toolkit():
     """
