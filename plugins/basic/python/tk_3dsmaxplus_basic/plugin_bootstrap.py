@@ -11,33 +11,82 @@
 import os
 import sys
 
-from sgtk_plugin_basic_3dsmax import manifest
+from . import constants
+
 
 def bootstrap_toolkit(root_path):
+    """
+    Entry point for toolkit bootstrap in 3dsmax.
+    Called by the bootstrap.ms max script.
 
-    tk_core_path = manifest.get_sgtk_pythonpath(root_path)
-    sys.path.append(tk_core_path)
+    :param str root_path: Path to the root folder of the plugin
+    """
 
-    import sgtk
+    # --- Import Core ---
+    #
+    # - If we are running the plugin built as a stand-alone unit,
+    #   try to retrieve the path to sgtk core and add that to the pythonpath.
+    #   When the plugin has been built, there is a sgtk_plugin_basic_3dsmax
+    #   module which we can use to retrieve the location of core and add it
+    #   to the pythonpath.
+    # - If we are running toolkit as part of a larger zero config workflow
+    #   and not from a standalone workflow, we are running the plugin code
+    #   directly from the engine folder without a bundle cache and with this
+    #   configuration, core already exists in the pythonpath.
 
+    try:
+        from sgtk_plugin_basic_3dsmax import manifest
+        running_as_standalone_plugin = True
+    except ImportError:
+        running_as_standalone_plugin = False
+
+    if running_as_standalone_plugin:
+        # Retrieve the Shotgun toolkit core included with the plug-in and
+        # prepend its python package path to the python module search path.
+        tkcore_python_path = manifest.get_sgtk_pythonpath(root_path)
+        sys.path.insert(0, tkcore_python_path)
+        import sgtk
+
+    else:
+        # Running as part of the the launch process and as part of zero
+        # config. The launch logic that started maya has already
+        # added sgtk to the pythonpath.
+        import sgtk
+
+    # start logging to log file
     sgtk.LogManager().initialize_base_file_handler("tk-3dsmaxplus")
 
-    if manifest.debug_logging:
-        sgtk.LogManager().global_debug = True
-
+    # get a logger for the plugin
     sgtk_logger = sgtk.LogManager.get_logger("plugin")
-
     sgtk_logger.debug("Booting up toolkit plugin.")
 
-    # create boostrap manager
-    toolkit_mgr = sgtk.bootstrap.ToolkitManager()
+    try:
+        # When the user is not yet authenticated,
+        # pop up the Shotgun login dialog to get the user's credentials,
+        # otherwise, get the cached user's credentials.
+        user = sgtk.authentication.ShotgunAuthenticator().get_user()
 
-    # pass the manager to the manifest for basic init
-    manifest.initialize_manager(toolkit_mgr, root_path)
+    except sgtk.authentication.AuthenticationCancelled:
+        # When the user cancelled the Shotgun login dialog,
+        # keep around the displayed login menu.
+        sgtk_logger.info("Shotgun login was cancelled by the user.")
+        return
 
+    # Create a boostrap manager for the logged in user with the plug-in configuration data.
+    toolkit_mgr = sgtk.bootstrap.ToolkitManager(user)
+    toolkit_mgr.base_configuration = constants.BASE_CONFIGURATION
+    toolkit_mgr.plugin_id = constants.PLUGIN_ID
+    toolkit_mgr.bundle_cache_fallback_paths = [os.path.join(root_path, "bundle_cache")]
+
+    # Retrieve the Shotgun entity type and id when they exist in the environment.
+    # these are passed down through the app launcher when running in zero config
+    entity = toolkit_mgr.get_entity_from_environment()
+    sgtk_logger.debug("Will launch the engine with entity: %s" % entity)
+
+    # start engine
+    # @todo - add bootstrap progress reporting
     sgtk_logger.info("Starting the 3dsmaxplus engine.")
-
-    toolkit_mgr.bootstrap_engine("tk-3dsmaxplus", entity=None)
+    toolkit_mgr.bootstrap_engine("tk-3dsmaxplus", entity)
 
 
 def shutdown_toolkit():
