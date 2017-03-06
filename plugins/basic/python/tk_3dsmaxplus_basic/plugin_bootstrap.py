@@ -88,7 +88,7 @@ def bootstrap_toolkit(root_path):
 
     # start engine
     sgtk_logger.info("Starting the 3dsmaxplus engine.")
-    toolkit_mgr.bootstrap_engine("tk-3dsmaxplus", entity)
+    toolkit_mgr.bootstrap_engine_async("tk-3dsmaxplus", entity)
 
     sgtk_logger.debug("Bootstrap complete.")
 
