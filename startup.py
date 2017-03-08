@@ -45,7 +45,6 @@ class MaxLauncher(SoftwareLauncher):
         :returns: List of :class:`SoftwareVersion` instances
         """
         # First look for executables using the Autodesk Synergy registry.
-        sw_versions = None
         sw_versions = self._synergy_software_versions(versions)
         if not sw_versions:
             sw_versions = self._default_path_software_versions(versions)
@@ -167,9 +166,17 @@ class MaxLauncher(SoftwareLauncher):
         return sw_versions
 
     def _get_installation_paths_from_registry(self):
+        """
+        Query Windows registry for 3dsMax installations.
+
+        :returns: List of paths where 3dsmax is installed,
+        """
+        self.logger.debug("Querying windows registry for key HKEY_LOCAL_MACHINE\\SOFTWARE\\Autodesk\\3dsMax")
+
         base_key_name = "SOFTWARE\\Autodesk\\3dsMax"
         sub_key_names = []
 
+        # find all subkeys in key HKEY_LOCAL_MACHINE\SOFTWARE\Autodesk\3dsMax
         try:
             key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, base_key_name)
             sub_key_count = _winreg.QueryInfoKey(key)[0]
@@ -182,16 +189,16 @@ class MaxLauncher(SoftwareLauncher):
             self.logger.error("error opening key %s" % base_key_name)
 
         install_paths = []
+        # Query the value "Installdir" on all subkeys.
         try:
             for name in sub_key_names:
                 key_name = base_key_name + "\\" + name
                 key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, key_name)
                 try:
                     install_paths.append(_winreg.QueryValueEx(key, "Installdir")[0])
-                    self.logger.debug("found Installdir for key %s" % key_name)
+                    self.logger.debug("found Installdir value for key %s" % key_name)
                 except WindowsError:
                     self.logger.debug("value Installdir not found for key %s, skipping key" % key_name)
-
                 _winreg.CloseKey(key)
         except WindowsError:
             self.logger.error("error opening key %s" % key_name)
