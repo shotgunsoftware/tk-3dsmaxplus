@@ -88,9 +88,12 @@ def bootstrap_toolkit(root_path):
 
     # start engine
     sgtk_logger.info("Starting the 3dsmaxplus engine.")
-    toolkit_mgr.bootstrap_engine_async("tk-3dsmaxplus", entity)
-
-    sgtk_logger.debug("Bootstrap complete.")
+    toolkit_mgr.bootstrap_engine_async(
+        "tk-3dsmaxplus",
+        entity,
+        completed_callback=handle_bootstrap_completed,
+        failed_callback=handle_bootstrap_failed
+    )
 
 def progress_callback(progress_value, message):
     """
@@ -101,7 +104,32 @@ def progress_callback(progress_value, message):
                            and always in the range 0.0 to 1.0
     :param message:        Progress message string
     """
+
     print "Shotgun: %s" % message
+
+def handle_bootstrap_completed(engine):
+    """
+    Callback function that handles cleanup after successful completion of the bootstrap.
+
+    This function is executed in the main thread by the main event loop.
+
+    :param engine: Launched :class:`sgtk.platform.Engine` instance.
+    """
+
+    print "Shotgun: Bootstrap successfully."
+
+def handle_bootstrap_failed(phase, exception):
+    """
+    Callback function that handles cleanup after failed completion of the bootstrap.
+
+    This function is executed in the main thread by the main event loop.
+
+    :param phase: Bootstrap phase that raised the exception,
+                  ``ToolkitManager.TOOLKIT_BOOTSTRAP_PHASE`` or ``ToolkitManager.ENGINE_STARTUP_PHASE``.
+    :param exception: Python exception raised while bootstrapping.
+    """
+
+    print "Shotgun: Bootstrap failed. %s" % exception
 
 def shutdown_toolkit():
     """
