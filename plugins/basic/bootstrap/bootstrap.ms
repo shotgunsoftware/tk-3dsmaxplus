@@ -37,7 +37,6 @@ fn bootstrapToolkit = (
     -- execute python and off we go!
     format "Loading Shotgun integration...\n"
     python.Execute python_cmd
-    format "Shotgun integration loaded."
 
 )
 
