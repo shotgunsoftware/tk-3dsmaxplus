@@ -15,6 +15,7 @@ import _winreg
 
 from xml.etree import ElementTree
 
+import sgtk
 from sgtk import TankError
 from sgtk.platform import SoftwareLauncher, SoftwareVersion, LaunchInformation
 
@@ -67,9 +68,12 @@ class MaxLauncher(SoftwareLauncher):
         """
         required_env = {}
 
-        #
-        # TODO
-        #
+        startup_script_path = os.path.join(self.disk_location, "plugins", "basic", "bootstrap", "(zero-config)", "bootstrap.ms")
+        args = "-U MAXScript %s" % startup_script_path
+
+        # TODO: add support for file_to_open
+        # TODO: handle Toolkit Classid mode
+
         return LaunchInformation(exec_path, args, required_env)
 
     def _synergy_software_versions(self, versions):

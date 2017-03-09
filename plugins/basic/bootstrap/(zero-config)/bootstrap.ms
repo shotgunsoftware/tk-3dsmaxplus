@@ -8,11 +8,6 @@
 -- agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 -- not expressly granted therein are reserved by Shotgun Software Inc.
 
-
--- set up a callback that fires when the UI is ready
-callbacks.addScript #postSystemStartup "bootstrapToolkit()"
-
-
 ------------------------------------------------------------------------------------------
 fn bootstrapToolkit = (
     -- this function will determine the location of the plugin
@@ -20,7 +15,8 @@ fn bootstrapToolkit = (
     -- of the bootstrap.
 
     -- figure out plugin root path
-    bootstrap_folder = getFilenamePath(getSourceFileName())
+    script_folder = getFilenamePath(getSourceFileName())
+    bootstrap_folder = pathConfig.appendPath script_folder ".."
     plugin_root_folder = pathConfig.appendPath bootstrap_folder ".."
     plugin_root_folder = pathConfig.convertPathToAbsolute plugin_root_folder
 
@@ -40,3 +36,4 @@ fn bootstrapToolkit = (
 
 )
 
+bootstrapToolkit()
