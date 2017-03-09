@@ -15,7 +15,10 @@ import _winreg
 
 from xml.etree import ElementTree
 
+<<<<<<< HEAD
 import sgtk
+=======
+>>>>>>> 41eaf29ad2dee8034288845d37c33e17db481ecc
 from sgtk import TankError
 from sgtk.platform import SoftwareLauncher, SoftwareVersion, LaunchInformation
 
