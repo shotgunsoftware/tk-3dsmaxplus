@@ -74,7 +74,6 @@ def bootstrap_sgtk_with_plugins():
                 module.load(plugin_path)
             except AttributeError:
                 logger.error("Missing 'load()' method in plugin %s.  Plugin won't be loaded" % plugin_path)
-                print "Missing 'load()' method in plugin %s.  Plugin won't be loaded" % plugin_path
 
 def bootstrap_sgtk():
     """
