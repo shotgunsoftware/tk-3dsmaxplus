@@ -14,6 +14,14 @@ import sys
 from . import constants
 
 
+def load(root_path):
+    """
+    Entry point for plugin loading. Called by the startup.py.
+
+    :param str root_path: Path to the root folder of the plugin
+    """
+    bootstrap_toolkit(root_path)
+
 def bootstrap_toolkit(root_path):
     """
     Entry point for toolkit bootstrap in 3dsmax.
