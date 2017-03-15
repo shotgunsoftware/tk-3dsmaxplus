@@ -9,3 +9,4 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 from .plugin_bootstrap import bootstrap_toolkit
+from .plugin_bootstrap import load

@@ -24,6 +24,57 @@ def error(msg):
     print "ERROR: %s" % msg
 
 
+def bootstrap_sgtk_classic():
+    """
+    Parse environment variables for an engine name and
+    serialized Context to use to startup Toolkit and
+    the tk-3dsmaxplus engine and environment.
+    """
+
+    try:
+        import sgtk
+    except Exception, e:
+        error("Shotgun: Could not import sgtk! Disabling for now: %s" % e)
+        return
+
+    if not "TANK_ENGINE" in os.environ:
+        error("Shotgun: Missing required environment variable TANK_ENGINE.")
+        return
+
+    engine_name = os.environ.get("TANK_ENGINE")
+    try:
+        context = sgtk.context.deserialize(os.environ.get("TANK_CONTEXT"))
+    except Exception, e:
+        error("Shotgun: Could not create context! sgtk will be disabled. Details: %s" % e)
+        return
+
+    try:
+        sgtk.platform.start_engine(engine_name, context.tank, context)
+    except Exception, e:
+        error("Shotgun: Could not start engine: %s" % e)
+        return
+
+def bootstrap_sgtk_with_plugins():
+    """
+    Parse environment variables for a list of plugins to load that will
+    ultimately startup Toolkit and the tk-3dsmaxplus engine and environment.
+    """
+    import sgtk
+    logger = sgtk.LogManager.get_logger(__name__)
+
+    logger.debug("Launching 3dsMax in plugin mode")
+
+    # Load all plugins by calling the 'load()' entry point.
+    for plugin_path in os.environ["SGTK_LOAD_MAX_PLUGINS"].split(os.pathsep):
+        plugin_python_path = os.path.join(plugin_path, "python")
+        for module_name in os.listdir(plugin_python_path):
+            sys.path.append(plugin_python_path)
+            module = __import__(module_name)
+            try:
+                module.load(plugin_path)
+            except AttributeError:
+                logger.error("Missing 'load()' method in plugin %s.  Plugin won't be loaded" % plugin_path)
+
 def bootstrap_sgtk():
     """
     Bootstrap. This is called when preparing to launch by multi-launch.
@@ -47,36 +98,19 @@ def bootstrap_sgtk():
         error("Shotgun: Unknown platform - cannot setup ssl")
         return
 
-    try:
-        import sgtk
-    except Exception, e:
-        error("Shotgun: Could not import sgtk! Disabling for now: %s" % e)
-        return
-
-    if not "TANK_ENGINE" in os.environ:
-        error("Shotgun: Missing required environment variable TANK_ENGINE.")
-        return
-
-    engine_name = os.environ.get("TANK_ENGINE")
-    try:
-        context = sgtk.context.deserialize(os.environ.get("TANK_CONTEXT"))
-    except Exception, e:
-        error("Shotgun: Could not create context! sgtk will be disabled. Details: %s" % e)
-        return
-
-    try:
-        engine = sgtk.platform.start_engine(engine_name, context.tank, context)
-    except Exception, e:
-        error("Shotgun: Could not start engine: %s" % e)
-        return
+    if os.environ.get("SGTK_LOAD_MAX_PLUGINS"):
+        bootstrap_sgtk_with_plugins()
+    else:
+        bootstrap_sgtk_classic()
 
     # if a file was specified, load it now
-    file_to_open =  os.environ.get("TANK_FILE_TO_OPEN")
+    file_to_open = os.environ.get("TANK_FILE_TO_OPEN")
     if file_to_open:
         MaxPlus.FileManager.Open(file_to_open)
 
     # clean up temp env vars
-    for var in ["TANK_ENGINE", "TANK_CONTEXT", "TANK_FILE_TO_OPEN"]:
+    for var in ["TANK_ENGINE", "TANK_CONTEXT", "TANK_FILE_TO_OPEN",
+                "SGTK_LOAD_MAX_PLUGINS"]:
         if var in os.environ:
             del os.environ[var]
 
