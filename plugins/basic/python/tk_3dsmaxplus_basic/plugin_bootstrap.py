@@ -16,7 +16,7 @@ from . import constants
 
 def load(root_path):
     """
-    Entry point for plugin loading. Called by the startup.py.
+    Entry point for plugin loading. Called by startup.py.
 
     :param str root_path: Path to the root folder of the plugin
     """

@@ -81,9 +81,6 @@ class MaxLauncher(SoftwareLauncher):
             for find_plugin in find_plugins:
                 load_plugin = os.path.join(self.disk_location, "plugins", find_plugin)
                 if os.path.exists(load_plugin):
-                    # If the plugin path exists, add it to the list of MAYA_MODULE_PATHS
-                    # so Maya can find it and to the list of SGTK_LOAD_MAYA_PLUGINS so
-                    # the startup's userSetup.py file knows what plugins to load.
                     self.logger.debug("Preparing to launch builtin plugin '%s'" % load_plugin)
                     load_max_plugins.append(load_plugin)
                 else:
@@ -100,8 +97,8 @@ class MaxLauncher(SoftwareLauncher):
             # Prepare the launch environment with variables required by the
             # classic bootstrap approach.
             self.logger.info("Preparing 3dsMax Launch via Toolkit Classic methodology ...")
-            required_env["SGTK_ENGINE"] = self.engine_name
-            required_env["SGTK_CONTEXT"] = sgtk.context.serialize(self.context)
+            required_env["TANK_ENGINE"] = self.engine_name
+            required_env["TANK_CONTEXT"] = sgtk.context.serialize(self.context)
 
         if file_to_open:
             # Add the file name to open to the launch environment

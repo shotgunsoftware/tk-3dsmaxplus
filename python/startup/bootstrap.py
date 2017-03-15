@@ -37,13 +37,13 @@ def bootstrap_sgtk_classic():
         error("Shotgun: Could not import sgtk! Disabling for now: %s" % e)
         return
 
-    if not "SGTK_ENGINE" in os.environ:
-        error("Shotgun: Missing required environment variable SGTK_ENGINE.")
+    if not "TANK_ENGINE" in os.environ:
+        error("Shotgun: Missing required environment variable TANK_ENGINE.")
         return
 
-    engine_name = os.environ.get("SGTK_ENGINE")
+    engine_name = os.environ.get("TANK_ENGINE")
     try:
-        context = sgtk.context.deserialize(os.environ.get("SGTK_CONTEXT"))
+        context = sgtk.context.deserialize(os.environ.get("TANK_CONTEXT"))
     except Exception, e:
         error("Shotgun: Could not create context! sgtk will be disabled. Details: %s" % e)
         return
@@ -104,12 +104,13 @@ def bootstrap_sgtk():
         bootstrap_sgtk_classic()
 
     # if a file was specified, load it now
-    file_to_open = os.environ.get("SGTK_FILE_TO_OPEN")
+    file_to_open = os.environ.get("TANK_FILE_TO_OPEN")
     if file_to_open:
         MaxPlus.FileManager.Open(file_to_open)
 
     # clean up temp env vars
-    for var in ["SGTK_ENGINE", "SGTK_CONTEXT", "SGTK_FILE_TO_OPEN", "SGTK_LOAD_MAX_PLUGINS"]:
+    for var in ["TANK_ENGINE", "TANK_CONTEXT", "TANK_FILE_TO_OPEN",
+                "SGTK_LOAD_MAX_PLUGINS"]:
         if var in os.environ:
             del os.environ[var]
 
