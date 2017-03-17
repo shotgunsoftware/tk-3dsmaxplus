@@ -308,6 +308,7 @@ class MaxEngine(sgtk.platform.Engine):
             dock_widget.setFloating(True)
 
         dock_widget.show()
+        # Remember the dock widget, so we can delete it later.
         self._dock_widgets.append(dock_widget)
 
         return widget_instance
@@ -332,9 +333,8 @@ class MaxEngine(sgtk.platform.Engine):
                 self.log_error("Cannot close dialog %s: %s" % (dialog_window_title, exception))
 
         # Delete all dock widgets previously added.
-        main_window = MaxPlus.GetQMaxMainWindow()
         for dock_widget in self._dock_widgets:
-            main_window.removeDockWidget(dock_widget)
+            MaxPlus.GetQMaxMainWindow().removeDockWidget(dock_widget)
             dock_widget.deleteLater()
 
     def _create_dialog(self, title, bundle, widget, parent):
