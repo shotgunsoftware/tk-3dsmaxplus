@@ -12,7 +12,9 @@ import os
 import sys
 
 from . import constants
+from . import __name__ as PLUGIN_PACKAGE_NAME
 
+plugin_root_path = None
 
 def load(root_path):
     """
@@ -21,6 +23,7 @@ def load(root_path):
     :param str root_path: Path to the root folder of the plugin
     """
     bootstrap_toolkit(root_path)
+
 
 def bootstrap_toolkit(root_path):
     """
@@ -42,6 +45,10 @@ def bootstrap_toolkit(root_path):
     #   directly from the engine folder without a bundle cache and with this
     #   configuration, core already exists in the pythonpath.
 
+    # Remember path, to handle logout/login
+    global plugin_root_path
+    plugin_root_path = root_path
+
     try:
         from sgtk_plugin_basic_3dsmax import manifest
         running_as_standalone_plugin = True
@@ -51,13 +58,13 @@ def bootstrap_toolkit(root_path):
     if running_as_standalone_plugin:
         # Retrieve the Shotgun toolkit core included with the plug-in and
         # prepend its python package path to the python module search path.
-        tkcore_python_path = manifest.get_sgtk_pythonpath(root_path)
+        tkcore_python_path = manifest.get_sgtk_pythonpath(plugin_root_path)
         sys.path.insert(0, tkcore_python_path)
         import sgtk
 
     else:
         # Running as part of the the launch process and as part of zero
-        # config. The launch logic that started maya has already
+        # config. The launch logic that started 3dsmax has already
         # added sgtk to the pythonpath.
         import sgtk
 
@@ -65,8 +72,97 @@ def bootstrap_toolkit(root_path):
     sgtk.LogManager().initialize_base_file_handler("tk-3dsmaxplus")
 
     # get a logger for the plugin
-    sgtk_logger = sgtk.LogManager.get_logger("plugin")
+    sgtk_logger = sgtk.LogManager.get_logger("PLUGIN_PACKAGE_NAME")
     sgtk_logger.debug("Booting up toolkit plugin.")
+
+    _login_user()
+
+
+def progress_callback(progress_value, message):
+    """
+    Called whenever toolkit reports progress.
+
+    :param progress_value: The current progress value as float number.
+                           values will be reported in incremental order
+                           and always in the range 0.0 to 1.0
+    :param message:        Progress message string
+    """
+
+    print "Shotgun: %s" % message
+
+
+def handle_bootstrap_completed(engine):
+    """
+    Callback function that handles cleanup after successful completion of the bootstrap.
+
+    This function is executed in the main thread by the main event loop.
+
+    :param engine: Launched :class:`sgtk.platform.Engine` instance.
+    """
+
+    print "Shotgun: Bootstrap successfully."
+
+    # Add a logout menu item to the engine context menu.
+    engine.register_command("Log Out of Shotgun", _logout_login_user, {"type": "context_menu"})
+    engine.update_shotgun_menu()
+
+
+def handle_bootstrap_failed(phase, exception):
+    """
+    Callback function that handles cleanup after failed completion of the bootstrap.
+
+    This function is executed in the main thread by the main event loop.
+
+    :param phase: Bootstrap phase that raised the exception,
+                  ``ToolkitManager.TOOLKIT_BOOTSTRAP_PHASE`` or ``ToolkitManager.ENGINE_STARTUP_PHASE``.
+    :param exception: Python exception raised while bootstrapping.
+    """
+
+    print "Shotgun: Bootstrap failed. %s" % exception
+
+
+def shutdown_toolkit():
+    """
+    Shutdown the Shotgun toolkit and its Maya engine.
+    """
+    import sgtk
+    logger = sgtk.LogManager.get_logger(PLUGIN_PACKAGE_NAME)
+    engine = sgtk.platform.current_engine()
+
+    if engine:
+        logger.info("Stopping the Shotgun engine.")
+        # Close the various windows (dialogs, panels, etc.) opened by the engine.
+        engine.close_windows()
+        # Turn off your engine! Step away from the car!
+        engine.destroy()
+    else:
+        logger.debug("The Shotgun engine was already stopped!")
+
+
+def _logout_login_user():
+    _logout_user()
+    _login_user()
+
+
+def _logout_user():
+    """
+    Shuts down the engine and logs out the user of Shotgun.
+    """
+    import sgtk
+
+    # Shutting down the engine also get rid of the engine menu.
+    shutdown_toolkit()
+
+    # Clear the user's credentials to log him/her out.
+    sgtk.authentication.ShotgunAuthenticator().clear_default_user()
+
+
+def _login_user():
+    """
+    Logs in the user to Shotgun and starts the engine.
+    """
+    import sgtk
+    sgtk_logger = sgtk.LogManager.get_logger("PLUGIN_PACKAGE_NAME")
 
     try:
         # When the user is not yet authenticated,
@@ -84,7 +180,7 @@ def bootstrap_toolkit(root_path):
     toolkit_mgr = sgtk.bootstrap.ToolkitManager(user)
     toolkit_mgr.base_configuration = constants.BASE_CONFIGURATION
     toolkit_mgr.plugin_id = constants.PLUGIN_ID
-    toolkit_mgr.bundle_cache_fallback_paths = [os.path.join(root_path, "bundle_cache")]
+    toolkit_mgr.bundle_cache_fallback_paths = [os.path.join(plugin_root_path, "bundle_cache")]
 
     # Retrieve the Shotgun entity type and id when they exist in the environment.
     # these are passed down through the app launcher when running in zero config
@@ -102,50 +198,3 @@ def bootstrap_toolkit(root_path):
         completed_callback=handle_bootstrap_completed,
         failed_callback=handle_bootstrap_failed
     )
-
-def progress_callback(progress_value, message):
-    """
-    Called whenever toolkit reports progress.
-
-    :param progress_value: The current progress value as float number.
-                           values will be reported in incremental order
-                           and always in the range 0.0 to 1.0
-    :param message:        Progress message string
-    """
-
-    print "Shotgun: %s" % message
-
-def handle_bootstrap_completed(engine):
-    """
-    Callback function that handles cleanup after successful completion of the bootstrap.
-
-    This function is executed in the main thread by the main event loop.
-
-    :param engine: Launched :class:`sgtk.platform.Engine` instance.
-    """
-
-    print "Shotgun: Bootstrap successfully."
-
-def handle_bootstrap_failed(phase, exception):
-    """
-    Callback function that handles cleanup after failed completion of the bootstrap.
-
-    This function is executed in the main thread by the main event loop.
-
-    :param phase: Bootstrap phase that raised the exception,
-                  ``ToolkitManager.TOOLKIT_BOOTSTRAP_PHASE`` or ``ToolkitManager.ENGINE_STARTUP_PHASE``.
-    :param exception: Python exception raised while bootstrapping.
-    """
-
-    print "Shotgun: Bootstrap failed. %s" % exception
-
-def shutdown_toolkit():
-    """
-    Shutdown the Shotgun toolkit and its Maya engine.
-    """
-    import sgtk
-
-    # Turn off your engine! Step away from the car!
-    engine = sgtk.platform.current_engine()
-    if engine:
-        engine.destroy()

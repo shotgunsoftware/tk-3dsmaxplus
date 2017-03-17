@@ -19,6 +19,8 @@ import unicodedata
 from sgtk.platform.qt import QtCore, QtGui
 from .maxscript import MaxScript
 
+MENU_LABEL = "Shotgun"
+
 class MenuGenerator(object):
     """
     Menu generation functionality for 3dsmax
@@ -48,7 +50,7 @@ class MenuGenerator(object):
         """
 
         # Create the main menu
-        MaxScript.create_menu("Shotgun", self._menu_var)
+        MaxScript.create_menu(MENU_LABEL, self._menu_var)
 
         # enumerate all items and create menu objects for them
         cmd_items = []
@@ -56,7 +58,7 @@ class MenuGenerator(object):
             cmd_items.append(AppCommand(cmd_name, cmd_details))
 
         # start with context menu
-        ctx_builder = self._create_context_builder()
+        self._create_context_builder()
         for cmd in cmd_items:
             if cmd.get_type() == "context_menu":
                 cmd.add_to_menu(self._ctx_var, self._engine)
@@ -93,7 +95,10 @@ class MenuGenerator(object):
         # now add all apps to main menu
         self._add_app_menu(commands_by_app)
 
-        MaxScript.add_to_main_menu_bar(self._menu_var, "Shotgun")
+        MaxScript.add_to_main_menu_bar(self._menu_var, MENU_LABEL)
+
+    def destroy_menu(self):
+        MaxScript.destroy_menu(MENU_LABEL)
 
     def _create_context_builder(self):
         """

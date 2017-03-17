@@ -51,6 +51,13 @@ class MaxScript:
         '''.format(menu_var=menu_var, menu_name=menu_name))
 
     @staticmethod
+    def destroy_menu(menu_name):
+        MaxPlus.Core.EvalMAXScript('''
+            menu = menuMan.findMenu "{menu_name}"
+            if menu != undefined then menuMan.unregisterMenu menu
+        '''.format(menu_name=menu_name))
+
+    @staticmethod
     def add_separator(menu_var):
         """
         Add separator to a menu
