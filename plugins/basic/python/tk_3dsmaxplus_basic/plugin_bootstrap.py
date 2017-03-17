@@ -8,12 +8,14 @@
 # agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
+import MaxPlus
 import os
 import sys
 
 from . import constants
 from . import __name__ as PLUGIN_PACKAGE_NAME
 
+MENU_LABEL = "Shotgun"
 plugin_root_path = None
 
 def load(root_path):
@@ -75,7 +77,12 @@ def bootstrap_toolkit(root_path):
     sgtk_logger = sgtk.LogManager.get_logger("PLUGIN_PACKAGE_NAME")
     sgtk_logger.debug("Booting up toolkit plugin.")
 
-    _login_user()
+    if sgtk.authentication.ShotgunAuthenticator().get_default_user():
+        # When the user is already authenticated, automatically log him/her in.
+        _login_user()
+    else:
+        # When the user is not yet authenticated, display a login menu.
+        _create_login_menu()
 
 
 def progress_callback(progress_value, message):
@@ -103,7 +110,7 @@ def handle_bootstrap_completed(engine):
     print "Shotgun: Bootstrap successfully."
 
     # Add a logout menu item to the engine context menu.
-    engine.register_command("Log Out of Shotgun", _logout_login_user, {"type": "context_menu"})
+    engine.register_command("Log Out of Shotgun", _on_logout, {"type": "context_menu"})
     engine.update_shotgun_menu()
 
 
@@ -119,6 +126,7 @@ def handle_bootstrap_failed(phase, exception):
     """
 
     print "Shotgun: Bootstrap failed. %s" % exception
+    _create_login_menu()
 
 
 def shutdown_toolkit():
@@ -139,9 +147,13 @@ def shutdown_toolkit():
         logger.debug("The Shotgun engine was already stopped!")
 
 
-def _logout_login_user():
+def _on_logout():
+    """
+    Logs the user out and displays login menu
+    """
+
     _logout_user()
-    _login_user()
+    _create_login_menu()
 
 
 def _logout_user():
@@ -176,6 +188,8 @@ def _login_user():
         sgtk_logger.info("Shotgun login was cancelled by the user.")
         return
 
+    _delete_login_menu()
+
     # Create a boostrap manager for the logged in user with the plug-in configuration data.
     toolkit_mgr = sgtk.bootstrap.ToolkitManager(user)
     toolkit_mgr.base_configuration = constants.BASE_CONFIGURATION
@@ -198,3 +212,31 @@ def _login_user():
         completed_callback=handle_bootstrap_completed,
         failed_callback=handle_bootstrap_failed
     )
+
+
+def _create_login_menu():
+    """
+    Creates and displays a Shotgun user login menu.
+    """
+
+    _delete_login_menu()
+
+    mb = MaxPlus.MenuBuilder(MENU_LABEL)
+    action = MaxPlus.ActionFactory.Create(
+        'sgtk_plugin_category', "Log In to Shotgun", _login_user)
+    mb.AddItem(action)
+    main_menu = MaxPlus.MenuManager.GetMainMenu()
+
+    # Add menu item at the second to last position,
+    # which should be before "Help"
+    menu_index = main_menu.GetNumItems() - 1
+    mb.Create(main_menu, menu_index)
+
+
+def _delete_login_menu():
+    """
+    Deletes the displayed Shotgun user login menu.
+    """
+
+    if MaxPlus.MenuManager.MenuExists(MENU_LABEL):
+        MaxPlus.MenuManager.UnregisterMenu(MENU_LABEL)
