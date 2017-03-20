@@ -131,7 +131,7 @@ def handle_bootstrap_failed(phase, exception):
 
 def shutdown_toolkit():
     """
-    Shutdown the Shotgun toolkit and its Maya engine.
+    Shutdown the Shotgun toolkit and its 3dsMax engine.
     """
     import sgtk
     logger = sgtk.LogManager.get_logger(PLUGIN_PACKAGE_NAME)
@@ -284,7 +284,7 @@ def _get_plugin_info():
     try:
         # first, see if we can get the info from the manifest. if we can, no
         # need to parse info.yml
-        from sgtk_plugin_basic_maya import manifest
+        from sgtk_plugin_basic_3dsmax import manifest
         plugin_id = manifest.plugin_id
         base_configuration = manifest.base_configuration
     except ImportError:
