@@ -9,11 +9,3 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 # the constants associated with this plugin
-
-# the plugin id to identify this plugin with at bootstrap
-PLUGIN_ID = "basic.3dsmax"
-# the configuration to fall back on if no customization has been provided
-BASE_CONFIGURATION = {"type": "app_store", "name": "tk-config-basic"}
-
-
-
