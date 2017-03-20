@@ -74,7 +74,7 @@ def bootstrap_toolkit(root_path):
     sgtk.LogManager().initialize_base_file_handler("tk-3dsmaxplus")
 
     # get a logger for the plugin
-    sgtk_logger = sgtk.LogManager.get_logger("PLUGIN_PACKAGE_NAME")
+    sgtk_logger = sgtk.LogManager.get_logger(PLUGIN_PACKAGE_NAME)
     sgtk_logger.debug("Booting up toolkit plugin.")
 
     if sgtk.authentication.ShotgunAuthenticator().get_default_user():
@@ -174,7 +174,7 @@ def _login_user():
     Logs in the user to Shotgun and starts the engine.
     """
     import sgtk
-    sgtk_logger = sgtk.LogManager.get_logger("PLUGIN_PACKAGE_NAME")
+    sgtk_logger = sgtk.LogManager.get_logger(PLUGIN_PACKAGE_NAME)
 
     try:
         # When the user is not yet authenticated,
@@ -222,9 +222,19 @@ def _create_login_menu():
     _delete_login_menu()
 
     mb = MaxPlus.MenuBuilder(MENU_LABEL)
-    action = MaxPlus.ActionFactory.Create(
-        'sgtk_plugin_category', "Log In to Shotgun", _login_user)
-    mb.AddItem(action)
+    login_action = MaxPlus.ActionFactory.Create(
+        "sgtk_plugin_category", "Log In to Shotgun...", _login_user)
+    mb.AddItem(login_action)
+    mb.AddSeparator()
+
+    jump_to_website_action = MaxPlus.ActionFactory.Create(
+        "sgtk_plugin_category", "Learn about Shotgun...", _jump_to_website)
+    mb.AddItem(jump_to_website_action)
+
+    jump_to_signup_action = MaxPlus.ActionFactory.Create(
+        "sgtk_plugin_category", "Try Shotgun for Free...", _jump_to_signup)
+    mb.AddItem(jump_to_signup_action)
+
     main_menu = MaxPlus.MenuManager.GetMainMenu()
 
     # Add menu item at the second to last position,
@@ -240,3 +250,19 @@ def _delete_login_menu():
 
     if MaxPlus.MenuManager.MenuExists(MENU_LABEL):
         MaxPlus.MenuManager.UnregisterMenu(MENU_LABEL)
+
+
+def _jump_to_website():
+    """
+    Jumps to the Shotgun website in the default web browser.
+    """
+    from sgtk.platform.qt import QtCore, QtGui
+    QtGui.QDesktopServices.openUrl(QtCore.QUrl("https://www.shotgunsoftware.com"))
+
+
+def _jump_to_signup():
+    """
+    Jumps to the Shotgun signup page in the default web browser.
+    """
+    from sgtk.platform.qt import QtCore, QtGui
+    QtGui.QDesktopServices.openUrl(QtCore.QUrl("https://www.shotgunsoftware.com/signup"))

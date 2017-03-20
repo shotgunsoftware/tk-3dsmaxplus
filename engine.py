@@ -153,6 +153,9 @@ class MaxEngine(sgtk.platform.Engine):
         self.tk_3dsmax.MaxScript.enable_menu()
 
     def _remove_shotgun_menu(self):
+        """
+        Remove Shotgun menu from the main menu bar.
+        """
         self.log_debug("Removing the shotgun menu from the main menu bar.")
         self._menu_generator.destroy_menu()
 
@@ -203,6 +206,9 @@ class MaxEngine(sgtk.platform.Engine):
         self._remove_shotgun_menu()
 
     def update_shotgun_menu(self):
+        """
+        Rebuild the shotgun menu displayed in the main menu bar
+        """
         self._remove_shotgun_menu()
         self._add_shotgun_menu()
 
@@ -334,6 +340,9 @@ class MaxEngine(sgtk.platform.Engine):
 
         # Delete all dock widgets previously added.
         for dock_widget in self._dock_widgets:
+            # Keep MaxPlus.GetQMaxMainWindow() inside for-loop
+            # This will be executed only in version > 2017
+            # which supports Qt-docking.
             MaxPlus.GetQMaxMainWindow().removeDockWidget(dock_widget)
             dock_widget.deleteLater()
 
