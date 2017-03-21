@@ -35,7 +35,6 @@ fn bootstrapToolkit = (
     python_cmd = "import sys; sys.path.append('" + python_folder + "'); import tk_3dsmaxplus_basic; tk_3dsmaxplus_basic.bootstrap_toolkit('" + plugin_root_folder + "');"
 
     -- execute python and off we go!
-    format "Loading Shotgun integration...\n"
     python.Execute python_cmd
 
 )

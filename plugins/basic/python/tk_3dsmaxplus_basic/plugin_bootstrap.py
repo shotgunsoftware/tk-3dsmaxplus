@@ -47,6 +47,9 @@ def bootstrap_toolkit(root_path):
     #   directly from the engine folder without a bundle cache and with this
     #   configuration, core already exists in the pythonpath.
 
+    # Display temporary message in prompt line for maximum 5 secs.
+    MaxPlus.StatusPanel.DisplayTempPrompt("Loading Shotgun integration...", 5000)
+
     # Remember path, to handle logout/login
     global plugin_root_path
     plugin_root_path = root_path
@@ -96,6 +99,8 @@ def progress_callback(progress_value, message):
     """
 
     print "Shotgun: %s" % message
+    # Display temporary message in prompt line for maximum 2 secs.
+    MaxPlus.StatusPanel.DisplayTempPrompt("Shotgun: %s" % message, 2000)
 
 
 def handle_bootstrap_completed(engine):

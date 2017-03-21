@@ -112,7 +112,11 @@ class MenuGenerator(object):
 
         MaxScript.create_menu(ctx_name, self._ctx_var)
         MaxScript.add_action_to_menu(self._jump_to_sg, 'Jump to Shotgun', self._ctx_var, self._engine)
-        MaxScript.add_action_to_menu(self._jump_to_fs, 'Jump to File System', self._ctx_var, self._engine)
+
+        # Add the menu item only when there are some file system locations.
+        if ctx.filesystem_locations:
+            MaxScript.add_action_to_menu(self._jump_to_fs, 'Jump to File System', self._ctx_var, self._engine)
+
         MaxScript.add_separator(self._menu_var)
         MaxScript.add_to_menu(self._ctx_var, self._menu_var, "ctx_builder")
 
