@@ -62,10 +62,23 @@ class MaxLauncher(SoftwareLauncher):
         :param str file_to_open: (optional) Full path name of a file to open on launch.
         :returns: :class:`LaunchInformation` instance
         """
+        # This is a fix for PySide problems in 2017+ versions of Max. Now that
+        # Max ships with a full install of PySide, we need to ensure that dlls
+        # for the native Max install are sourced. If we don't do this, we end
+        # up with dlls loaded from SG Desktop's bin and we have a mismatch that
+        # results in complete breakage.
+        max_root = os.path.dirname(exec_path)
+        sgtk.util.prepend_path_to_env_var("PATH", max_root)
+
         required_env = {}
 
         startup_file = os.path.join(self.disk_location, "python", "startup", "bootstrap.py")
-        args += " -U PythonHost \"%s\"" % startup_file
+        new_args = "-U PythonHost \"%s\"" % startup_file
+
+        if args:
+            args = "%s %s" % (args, new_args)
+        else:
+            args = new_args
 
         # Check the engine settings to see whether any plugins have been
         # specified to load.
