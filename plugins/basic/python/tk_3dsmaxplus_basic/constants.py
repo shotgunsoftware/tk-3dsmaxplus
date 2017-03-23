@@ -9,3 +9,5 @@
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 # the constants associated with this plugin
+
+SG_MENU_ITEMS_CATEGORY = "Shotgun Menu Actions"
