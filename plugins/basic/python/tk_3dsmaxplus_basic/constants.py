@@ -11,3 +11,4 @@
 # the constants associated with this plugin
 
 SG_MENU_ITEMS_CATEGORY = "Shotgun Menu Actions"
+SG_MENU_LABEL = "Shotgun"
