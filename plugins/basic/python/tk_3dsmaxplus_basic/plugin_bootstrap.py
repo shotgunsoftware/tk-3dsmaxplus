@@ -231,16 +231,16 @@ def _create_login_menu():
 
     mb = MaxPlus.MenuBuilder(MENU_LABEL)
     login_action = MaxPlus.ActionFactory.Create(
-        "sgtk_plugin_category", "Log In to Shotgun...", _login_user)
+        constants.SG_MENU_ITEMS_CATEGORY, "Log In to Shotgun...", _login_user)
     mb.AddItem(login_action)
     mb.AddSeparator()
 
     jump_to_website_action = MaxPlus.ActionFactory.Create(
-        "sgtk_plugin_category", "Learn about Shotgun...", _jump_to_website)
+        constants.SG_MENU_ITEMS_CATEGORY, "Learn about Shotgun...", _jump_to_website)
     mb.AddItem(jump_to_website_action)
 
     jump_to_signup_action = MaxPlus.ActionFactory.Create(
-        "sgtk_plugin_category", "Try Shotgun for Free...", _jump_to_signup)
+        constants.SG_MENU_ITEMS_CATEGORY, "Try Shotgun for Free...", _jump_to_signup)
     mb.AddItem(jump_to_signup_action)
 
     main_menu = MaxPlus.MenuManager.GetMainMenu()
@@ -264,7 +264,14 @@ def _jump_to_website():
     """
     Jumps to the Shotgun website in the default web browser.
     """
-    from sgtk.platform.qt import QtCore, QtGui
+
+    # At this point, the engine is not launched, so "QtCore" and
+    # "QtGui" variables are not defined in sgtk.platform.qt yet.
+    from sgtk.util.qt_importer import QtImporter
+    qt_importer = QtImporter()
+    QtCore = qt_importer.QtCore
+    QtGui = qt_importer.QtGui
+
     QtGui.QDesktopServices.openUrl(QtCore.QUrl("https://www.shotgunsoftware.com"))
 
 
@@ -272,7 +279,14 @@ def _jump_to_signup():
     """
     Jumps to the Shotgun signup page in the default web browser.
     """
-    from sgtk.platform.qt import QtCore, QtGui
+
+    # At this point, the engine is not launched, so "QtCore" and
+    # "QtGui" variables are not defined in sgtk.platform.qt yet.
+    from sgtk.util.qt_importer import QtImporter
+    qt_importer = QtImporter()
+    QtCore = qt_importer.QtCore
+    QtGui = qt_importer.QtGui
+
     QtGui.QDesktopServices.openUrl(QtCore.QUrl("https://www.shotgunsoftware.com/signup"))
 
 
