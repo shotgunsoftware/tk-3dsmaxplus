@@ -15,8 +15,11 @@ import sys
 from . import constants
 from . import __name__ as PLUGIN_PACKAGE_NAME
 
-MENU_LABEL = "Shotgun"
-plugin_root_path = None
+
+class PluginProperties(object):
+    plugin_root_path = None
+    running_as_standalone_plugin = False
+
 
 def load(root_path):
     """
@@ -51,19 +54,18 @@ def bootstrap_toolkit(root_path):
     MaxPlus.StatusPanel.DisplayTempPrompt("Loading Shotgun integration...", 5000)
 
     # Remember path, to handle logout/login
-    global plugin_root_path
-    plugin_root_path = root_path
+    PluginProperties.plugin_root_path = root_path
 
     try:
         from sgtk_plugin_basic_3dsmax import manifest
-        running_as_standalone_plugin = True
+        PluginProperties.running_as_standalone_plugin = True
     except ImportError:
-        running_as_standalone_plugin = False
+        PluginProperties.running_as_standalone_plugin = False
 
-    if running_as_standalone_plugin:
+    if PluginProperties.running_as_standalone_plugin:
         # Retrieve the Shotgun toolkit core included with the plug-in and
         # prepend its python package path to the python module search path.
-        tkcore_python_path = manifest.get_sgtk_pythonpath(plugin_root_path)
+        tkcore_python_path = manifest.get_sgtk_pythonpath(PluginProperties.plugin_root_path)
         sys.path.insert(0, tkcore_python_path)
         import sgtk
 
@@ -114,9 +116,11 @@ def handle_bootstrap_completed(engine):
 
     print "Shotgun: Bootstrap successfully."
 
-    # Add a logout menu item to the engine context menu.
-    engine.register_command("Log Out of Shotgun", _on_logout, {"type": "context_menu"})
-    engine.update_shotgun_menu()
+    # Add a logout menu item to the engine context menu only when
+    # running as standalone plugin.
+    if PluginProperties.running_as_standalone_plugin:
+        engine.register_command("Log Out of Shotgun", _on_logout, {"type": "context_menu"})
+        engine.update_shotgun_menu()
 
 
 def handle_bootstrap_failed(phase, exception):
@@ -202,7 +206,7 @@ def _login_user():
     toolkit_mgr = sgtk.bootstrap.ToolkitManager(user)
     toolkit_mgr.base_configuration = plugin_info["base_configuration"]
     toolkit_mgr.plugin_id = plugin_info["plugin_id"]
-    toolkit_mgr.bundle_cache_fallback_paths = [os.path.join(plugin_root_path, "bundle_cache")]
+    toolkit_mgr.bundle_cache_fallback_paths = [os.path.join(PluginProperties.plugin_root_path, "bundle_cache")]
 
     # Retrieve the Shotgun entity type and id when they exist in the environment.
     # these are passed down through the app launcher when running in zero config
@@ -229,7 +233,7 @@ def _create_login_menu():
 
     _delete_login_menu()
 
-    mb = MaxPlus.MenuBuilder(MENU_LABEL)
+    mb = MaxPlus.MenuBuilder(constants.SG_MENU_LABEL)
     login_action = MaxPlus.ActionFactory.Create(
         constants.SG_MENU_ITEMS_CATEGORY, "Log In to Shotgun...", _login_user)
     mb.AddItem(login_action)
@@ -256,8 +260,8 @@ def _delete_login_menu():
     Deletes the displayed Shotgun user login menu.
     """
 
-    if MaxPlus.MenuManager.MenuExists(MENU_LABEL):
-        MaxPlus.MenuManager.UnregisterMenu(MENU_LABEL)
+    if MaxPlus.MenuManager.MenuExists(constants.SG_MENU_LABEL):
+        MaxPlus.MenuManager.UnregisterMenu(constants.SG_MENU_LABEL)
 
 
 def _jump_to_website():
@@ -335,5 +339,3 @@ def _get_plugin_info():
         plugin_id=plugin_id,
         base_configuration=base_configuration,
     )
-
-
