@@ -183,6 +183,9 @@ class MaxEngine(sgtk.platform.Engine):
         except AttributeError:
             self.log_debug("CuiMenusPostLoad notification code is not available in this version of MaxPlus.")
 
+        # Run a series of app instance commands at startup.
+        self._run_app_instance_commands()
+
     def post_context_change(self, old_context, new_context):
         """
         Handles necessary processing after a context change has been completed
@@ -194,6 +197,55 @@ class MaxEngine(sgtk.platform.Engine):
         # Replacing the menu will cause the old one to be removed
         # and the new one put into its place.
         self._add_shotgun_menu()
+
+    def _run_app_instance_commands(self):
+        """
+        Runs the series of app instance commands listed in the 'run_at_startup' setting
+        of the environment configuration yaml file.
+        """
+
+        # Build a dictionary mapping app instance names to dictionaries of commands they registered with the engine.
+        app_instance_commands = {}
+        for (command_name, value) in self.commands.iteritems():
+            app_instance = value["properties"].get("app")
+            if app_instance:
+                # Add entry 'command name: command function' to the command dictionary of this app instance.
+                command_dict = app_instance_commands.setdefault(app_instance.instance_name, {})
+                command_dict[command_name] = value["callback"]
+
+        # Run the series of app instance commands listed in the 'run_at_startup' setting.
+        for app_setting_dict in self.get_setting("run_at_startup", []):
+            app_instance_name = app_setting_dict["app_instance"]
+            # Menu name of the command to run or '' to run all commands of the given app instance.
+            setting_command_name = app_setting_dict["name"]
+
+            # Retrieve the command dictionary of the given app instance.
+            command_dict = app_instance_commands.get(app_instance_name)
+
+            if command_dict is None:
+                self.log_warning(
+                    "%s configuration setting 'run_at_startup' requests app '%s' that is not installed." %
+                    (self.name, app_instance_name))
+            else:
+                if not setting_command_name:
+                    # Run all commands of the given app instance.
+                    for (command_name, command_function) in command_dict.iteritems():
+                        self.log_debug("%s startup running app '%s' command '%s'." %
+                                       (self.name, app_instance_name, command_name))
+                        command_function()
+                else:
+                    # Run the command whose name is listed in the 'run_at_startup' setting.
+                    command_function = command_dict.get(setting_command_name)
+                    if command_function:
+                        self.log_debug("%s startup running app '%s' command '%s'." %
+                                       (self.name, app_instance_name, setting_command_name))
+                        command_function()
+                    else:
+                        known_commands = ', '.join("'%s'" % name for name in command_dict)
+                        self.log_warning(
+                            "%s configuration setting 'run_at_startup' requests app '%s' unknown command '%s'. "
+                            "Known commands: %s" %
+                            (self.name, app_instance_name, setting_command_name, known_commands))
 
     def destroy_engine(self):
         """
