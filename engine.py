@@ -24,11 +24,16 @@ class MaxEngine(sgtk.platform.Engine):
         """
         Engine Constructor
         """
-        # proceed about your business
-        sgtk.platform.Engine.__init__(self, *args, **kwargs)
+
+        # Add instance variables before calling our base class
+        # __init__() because the initialization may need those
+        # variables.
         self._parent_to_max = True
         self._on_menus_loaded_handler = None
         self._dock_widgets = []
+
+        # proceed about your business
+        sgtk.platform.Engine.__init__(self, *args, **kwargs)
 
     ##########################################################################################
     # properties
