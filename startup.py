@@ -10,8 +10,8 @@
 
 import os
 import re
+import sys
 import sgtk
-import _winreg
 
 from sgtk.platform import SoftwareLauncher, SoftwareVersion, LaunchInformation
 
@@ -38,6 +38,10 @@ class MaxLauncher(SoftwareLauncher):
         """
 
         self.logger.debug("Scanning for 3dsMax executables...")
+
+        if sys.platform != "win32":
+            # max only exists on windows
+            return []
 
         supported_sw_versions = []
         for sw_version in self._find_software():
@@ -173,6 +177,8 @@ def _get_installation_paths_from_registry(logger):
 
     :returns: List of paths where 3dsmax is installed,
     """
+    # import it locally so that
+    import _winreg
     logger.debug("Querying windows registry for key HKEY_LOCAL_MACHINE\\SOFTWARE\\Autodesk\\3dsMax")
 
     base_key_name = "SOFTWARE\\Autodesk\\3dsMax"
