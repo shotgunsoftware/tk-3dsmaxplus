@@ -75,10 +75,10 @@ class MaxEngine(sgtk.platform.Engine):
             # and log the warning
             self.log_warning(msg)
 
-        elif not self._is_at_least_max_2015():
+        elif not self._is_at_least_max_2016():
             # Unsupported max version
             msg = ("Shotgun Pipeline Toolkit!\n\n"
-                   "The Shotgun Pipeline Toolkit does not work with 3ds max versions prior to 2015.")
+                   "The Shotgun Pipeline Toolkit does not work with 3ds max versions prior to 2016.")
 
             # Display warning dialog
             MaxPlus.Core.EvalMAXScript('messagebox "Warning - ' + msg + '" title: "Shotgun Warning"')
@@ -525,8 +525,8 @@ class MaxEngine(sgtk.platform.Engine):
     ##########################################################################################
     # MaxPlus SDK Patching
 
-    # Version Id for 3dsmax 2015 Taken from Max Sdk (not currently available in maxplus)
-    MAX_RELEASE_R17 = 17000
+    # Version Id for 3dsmax 2016 Taken from Max Sdk (not currently available in maxplus)
+    MAX_RELEASE_R18 = 18000
 
     # Latest supported max version
     MAXIMUM_SUPPORTED_VERSION = 20000
@@ -552,8 +552,8 @@ class MaxEngine(sgtk.platform.Engine):
 
         return version_number
 
-    def _is_at_least_max_2015(self):
+    def _is_at_least_max_2016(self):
         """
         Returns True if current Max version is equal or above 3ds max 2015
         """
-        return self._get_max_version() >= MaxEngine.MAX_RELEASE_R17
+        return self._get_max_version() >= MaxEngine.MAX_RELEASE_R18
