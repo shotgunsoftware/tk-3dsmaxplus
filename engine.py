@@ -355,6 +355,10 @@ class MaxEngine(sgtk.platform.Engine):
             dock_widget.setObjectName(dock_widget_id)
             dock_widget.setWidget(widget_instance)
             self.log_debug("Created new dock widget %s" % dock_widget_id)
+
+            # Disable 3dsMax accelerators, in order for QTextEdit and QLineEdit
+            # widgets to work properly.
+            widget_instance.setProperty("NoMaxAccelerators", True)
         else:
             # The dock widget wrapper already exists, so just get the
             # shotgun panel from it.
