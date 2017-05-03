@@ -24,9 +24,16 @@ class MaxEngine(sgtk.platform.Engine):
         """
         Engine Constructor
         """
+
+        # Add instance variables before calling our base class
+        # __init__() because the initialization may need those
+        # variables.
+        self._parent_to_max = True
+        self._on_menus_loaded_handler = None
+        self._dock_widgets = []
+
         # proceed about your business
         sgtk.platform.Engine.__init__(self, *args, **kwargs)
-        self._parent_to_max = True
 
     ##########################################################################################
     # properties
@@ -68,10 +75,10 @@ class MaxEngine(sgtk.platform.Engine):
             # and log the warning
             self.log_warning(msg)
 
-        elif not self._is_at_least_max_2015():
+        elif not self._is_at_least_max_2016():
             # Unsupported max version
             msg = ("Shotgun Pipeline Toolkit!\n\n"
-                   "The Shotgun Pipeline Toolkit does not work with 3ds max versions prior to 2015.")
+                   "The Shotgun Pipeline Toolkit does not work with 3ds max versions prior to 2016.")
 
             # Display warning dialog
             MaxPlus.Core.EvalMAXScript('messagebox "Warning - ' + msg + '" title: "Shotgun Warning"')
@@ -150,6 +157,13 @@ class MaxEngine(sgtk.platform.Engine):
         self._menu_generator.create_menu()
         self.tk_3dsmax.MaxScript.enable_menu()
 
+    def _remove_shotgun_menu(self):
+        """
+        Remove Shotgun menu from the main menu bar.
+        """
+        self.log_debug("Removing the shotgun menu from the main menu bar.")
+        self._menu_generator.destroy_menu()
+
     def _on_menus_loaded(self, code):
         """
         Called when receiving CuiMenusPostLoad from 3dsMax.
@@ -169,9 +183,13 @@ class MaxEngine(sgtk.platform.Engine):
         try:
             # Listen to the CuiMenusPostLoad notification in order to add
             # our shotgun menu after workspace reset/switch.
-            MaxPlus.NotificationManager.Register(MaxPlus.NotificationCodes.CuiMenusPostLoad, self._on_menus_loaded)
+            self._on_menus_loaded_handler = MaxPlus.NotificationManager.Register(
+                MaxPlus.NotificationCodes.CuiMenusPostLoad, self._on_menus_loaded)
         except AttributeError:
             self.log_debug("CuiMenusPostLoad notification code is not available in this version of MaxPlus.")
+
+        # Run a series of app instance commands at startup.
+        self._run_app_instance_commands()
 
     def post_context_change(self, old_context, new_context):
         """
@@ -185,13 +203,71 @@ class MaxEngine(sgtk.platform.Engine):
         # and the new one put into its place.
         self._add_shotgun_menu()
 
+    def _run_app_instance_commands(self):
+        """
+        Runs the series of app instance commands listed in the 'run_at_startup' setting
+        of the environment configuration yaml file.
+        """
+
+        # Build a dictionary mapping app instance names to dictionaries of commands they registered with the engine.
+        app_instance_commands = {}
+        for (command_name, value) in self.commands.iteritems():
+            app_instance = value["properties"].get("app")
+            if app_instance:
+                # Add entry 'command name: command function' to the command dictionary of this app instance.
+                command_dict = app_instance_commands.setdefault(app_instance.instance_name, {})
+                command_dict[command_name] = value["callback"]
+
+        # Run the series of app instance commands listed in the 'run_at_startup' setting.
+        for app_setting_dict in self.get_setting("run_at_startup", []):
+            app_instance_name = app_setting_dict["app_instance"]
+            # Menu name of the command to run or '' to run all commands of the given app instance.
+            setting_command_name = app_setting_dict["name"]
+
+            # Retrieve the command dictionary of the given app instance.
+            command_dict = app_instance_commands.get(app_instance_name)
+
+            if command_dict is None:
+                self.log_warning(
+                    "%s configuration setting 'run_at_startup' requests app '%s' that is not installed." %
+                    (self.name, app_instance_name))
+            else:
+                if not setting_command_name:
+                    # Run all commands of the given app instance.
+                    for (command_name, command_function) in command_dict.iteritems():
+                        self.log_debug("%s startup running app '%s' command '%s'." %
+                                       (self.name, app_instance_name, command_name))
+                        command_function()
+                else:
+                    # Run the command whose name is listed in the 'run_at_startup' setting.
+                    command_function = command_dict.get(setting_command_name)
+                    if command_function:
+                        self.log_debug("%s startup running app '%s' command '%s'." %
+                                       (self.name, app_instance_name, setting_command_name))
+                        command_function()
+                    else:
+                        known_commands = ', '.join("'%s'" % name for name in command_dict)
+                        self.log_warning(
+                            "%s configuration setting 'run_at_startup' requests app '%s' unknown command '%s'. "
+                            "Known commands: %s" %
+                            (self.name, app_instance_name, setting_command_name, known_commands))
+
     def destroy_engine(self):
         """
         Called when the engine is shutting down
         """
         self.log_debug('%s: Destroying...' % self)
 
-        MaxPlus.NotificationManager.Unregister(self._on_menus_loaded)
+        if self._on_menus_loaded_handler is not None:
+            MaxPlus.NotificationManager.Unregister(self._on_menus_loaded_handler)
+        self._remove_shotgun_menu()
+
+    def update_shotgun_menu(self):
+        """
+        Rebuild the shotgun menu displayed in the main menu bar
+        """
+        self._remove_shotgun_menu()
+        self._add_shotgun_menu()
 
     ##########################################################################################
     # logging
@@ -279,6 +355,10 @@ class MaxEngine(sgtk.platform.Engine):
             dock_widget.setObjectName(dock_widget_id)
             dock_widget.setWidget(widget_instance)
             self.log_debug("Created new dock widget %s" % dock_widget_id)
+
+            # Disable 3dsMax accelerators, in order for QTextEdit and QLineEdit
+            # widgets to work properly.
+            widget_instance.setProperty("NoMaxAccelerators", True)
         else:
             # The dock widget wrapper already exists, so just get the
             # shotgun panel from it.
@@ -295,8 +375,37 @@ class MaxEngine(sgtk.platform.Engine):
             dock_widget.setFloating(True)
 
         dock_widget.show()
+        # Remember the dock widget, so we can delete it later.
+        self._dock_widgets.append(dock_widget)
 
         return widget_instance
+
+    def close_windows(self):
+        """
+        Closes the various windows (dialogs, panels, etc.) opened by the engine.
+        """
+
+        # Make a copy of the list of Tank dialogs that have been created by the engine and
+        # are still opened since the original list will be updated when each dialog is closed.
+        opened_dialog_list = self.created_qt_dialogs[:]
+
+        # Loop through the list of opened Tank dialogs.
+        for dialog in opened_dialog_list:
+            dialog_window_title = dialog.windowTitle()
+            try:
+                # Close the dialog and let its close callback remove it from the original dialog list.
+                self.log_debug("Closing dialog %s." % dialog_window_title)
+                dialog.close()
+            except Exception, exception:
+                self.log_error("Cannot close dialog %s: %s" % (dialog_window_title, exception))
+
+        # Delete all dock widgets previously added.
+        for dock_widget in self._dock_widgets:
+            # Keep MaxPlus.GetQMaxMainWindow() inside for-loop
+            # This will be executed only in version > 2017
+            # which supports Qt-docking.
+            MaxPlus.GetQMaxMainWindow().removeDockWidget(dock_widget)
+            dock_widget.deleteLater()
 
     def _create_dialog(self, title, bundle, widget, parent):
         """
@@ -309,12 +418,16 @@ class MaxEngine(sgtk.platform.Engine):
         # enough version of 3ds Max. Anything short of 2016 SP1 is going to
         # fail here with an AttributeError, so we can just catch that and
         # continue on without the new-style parenting.
+        previous_parent = dialog.parent()
         if self._parent_to_max:
             try:
                 self.log_debug("Attempting to attach dialog to 3ds Max...")
-                mr = MaxPlus.AttachQWidgetToMax(dialog)
+                # widget must be parentless when calling MaxPlus.AttachQWidgetToMax
+                dialog.setParent(None)
+                MaxPlus.AttachQWidgetToMax(dialog)
                 self.log_debug("AttachQWidgetToMax successful.")
             except AttributeError:
+                dialog.setParent(previous_parent)
                 self.log_debug("AttachQWidgetToMax not available in this version of 3ds Max.")
 
         dialog.installEventFilter(self.dialogEvents)
@@ -416,8 +529,8 @@ class MaxEngine(sgtk.platform.Engine):
     ##########################################################################################
     # MaxPlus SDK Patching
 
-    # Version Id for 3dsmax 2015 Taken from Max Sdk (not currently available in maxplus)
-    MAX_RELEASE_R17 = 17000
+    # Version Id for 3dsmax 2016 Taken from Max Sdk (not currently available in maxplus)
+    MAX_RELEASE_R18 = 18000
 
     # Latest supported max version
     MAXIMUM_SUPPORTED_VERSION = 20000
@@ -443,8 +556,8 @@ class MaxEngine(sgtk.platform.Engine):
 
         return version_number
 
-    def _is_at_least_max_2015(self):
+    def _is_at_least_max_2016(self):
         """
         Returns True if current Max version is equal or above 3ds max 2015
         """
-        return self._get_max_version() >= MaxEngine.MAX_RELEASE_R17
+        return self._get_max_version() >= MaxEngine.MAX_RELEASE_R18

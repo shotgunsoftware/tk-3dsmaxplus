@@ -11,6 +11,7 @@
 """
 Menu handling for 3ds Max
 """
+import MaxPlus
 import os
 import sys
 import traceback
@@ -18,6 +19,8 @@ import unicodedata
 
 from sgtk.platform.qt import QtCore, QtGui
 from .maxscript import MaxScript
+
+MENU_LABEL = "Shotgun"
 
 class MenuGenerator(object):
     """
@@ -48,7 +51,7 @@ class MenuGenerator(object):
         """
 
         # Create the main menu
-        MaxScript.create_menu("Shotgun", self._menu_var)
+        MaxScript.create_menu(MENU_LABEL, self._menu_var)
 
         # enumerate all items and create menu objects for them
         cmd_items = []
@@ -56,7 +59,7 @@ class MenuGenerator(object):
             cmd_items.append(AppCommand(cmd_name, cmd_details))
 
         # start with context menu
-        ctx_builder = self._create_context_builder()
+        self._create_context_builder()
         for cmd in cmd_items:
             if cmd.get_type() == "context_menu":
                 cmd.add_to_menu(self._ctx_var, self._engine)
@@ -93,7 +96,11 @@ class MenuGenerator(object):
         # now add all apps to main menu
         self._add_app_menu(commands_by_app)
 
-        MaxScript.add_to_main_menu_bar(self._menu_var, "Shotgun")
+        MaxScript.add_to_main_menu_bar(self._menu_var, MENU_LABEL)
+
+    def destroy_menu(self):
+        if MaxPlus.MenuManager.MenuExists(MENU_LABEL):
+            MaxPlus.MenuManager.UnregisterMenu(MENU_LABEL)
 
     def _create_context_builder(self):
         """
@@ -105,7 +112,11 @@ class MenuGenerator(object):
 
         MaxScript.create_menu(ctx_name, self._ctx_var)
         MaxScript.add_action_to_menu(self._jump_to_sg, 'Jump to Shotgun', self._ctx_var, self._engine)
-        MaxScript.add_action_to_menu(self._jump_to_fs, 'Jump to File System', self._ctx_var, self._engine)
+
+        # Add the menu item only when there are some file system locations.
+        if ctx.filesystem_locations:
+            MaxScript.add_action_to_menu(self._jump_to_fs, 'Jump to File System', self._ctx_var, self._engine)
+
         MaxScript.add_separator(self._menu_var)
         MaxScript.add_to_menu(self._ctx_var, self._menu_var, "ctx_builder")
 
