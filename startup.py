@@ -113,7 +113,7 @@ class MaxLauncher(SoftwareLauncher):
         else:
             # Prepare the launch environment with variables required by the
             # classic bootstrap approach.
-            self.logger.info("Preparing 3dsMax Launch via Toolkit Classic methodology ...")
+            self.logger.debug("Preparing 3dsMax Launch via Toolkit Classic methodology ...")
             required_env["TANK_ENGINE"] = self.engine_name
             required_env["TANK_CONTEXT"] = sgtk.context.serialize(self.context)
 
