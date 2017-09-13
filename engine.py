@@ -20,6 +20,27 @@ class MaxEngine(sgtk.platform.Engine):
     """
     The main Toolkit engine for 3ds Max
     """
+
+    @property
+    def host_info(self):
+        """
+        :returns: A {"name": application name, "version": application version}
+                  dictionary with informations about the application hosting this
+                  engine.
+
+        References:
+        http://docs.autodesk.com/3DSMAX/16/ENU/3ds-Max-Python-API-Documentation/index.html
+        """
+        host_info = {"name": "3ds Max Plus version", "version": "unknown"}
+
+        try:
+            host_info["version"] = str(self._max_version_to_year(self._get_max_version()))
+        except:
+            # Fallback to initialized values above
+            pass
+
+        return host_info
+
     def __init__(self, *args, **kwargs):
         """
         Engine Constructor
@@ -85,13 +106,6 @@ class MaxEngine(sgtk.platform.Engine):
                            
             # and log the warning
             self.log_warning(msg)
-
-        try:
-            self.log_user_attribute_metric("3ds Max Plus version",
-                str(self._max_version_to_year(self._get_max_version())))
-        except:
-            # ignore all errors. ex: using a core that doesn't support metrics
-            pass
 
         self._safe_dialog = []
 
