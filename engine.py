@@ -24,14 +24,28 @@ class MaxEngine(sgtk.platform.Engine):
     @property
     def host_info(self):
         """
-        :returns: A {"name": application name, "version": application version}
-                  dictionary with informations about the application hosting this
-                  engine.
+        :returns: A dictionary with information about the application hosting this engine.
+
+        The returned dictionary is of the following form on success:
+        Note that the version field refers to the release year.
+
+            {
+                "name": "3ds Max",
+                "version": "2018",
+            }
+
+        The returned dictionary is of following form on an error preventing
+        the version identification.
+
+            {
+                "name": "3ds Max",
+                "version: "unknown"
+            }
 
         References:
         http://docs.autodesk.com/3DSMAX/16/ENU/3ds-Max-Python-API-Documentation/index.html
         """
-        host_info = {"name": "3ds Max Plus version", "version": "unknown"}
+        host_info = {"name": "3ds Max", "version": "unknown"}
 
         try:
             host_info["version"] = str(self._max_version_to_year(self._get_max_version()))
@@ -567,6 +581,7 @@ class MaxEngine(sgtk.platform.Engine):
         # Transform it to a version id
         # (Macro to get 3ds max release from version id)
         version_number = (version_id >> 16) & 0xffff
+
 
         return version_number
 
