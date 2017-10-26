@@ -72,7 +72,7 @@ class MaxSessionCollector(HookBaseClass):
         """
 
         # create an item representing the current max session
-        item = self.collect_current_max_session(parent_item)
+        item = self.collect_current_max_session(parent_item, settings)
         project_root = item.properties["project_root"]
 
         # if we can determine a project root, collect other files to publish

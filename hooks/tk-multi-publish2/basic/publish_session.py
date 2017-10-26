@@ -18,7 +18,7 @@ HookBaseClass = sgtk.get_hook_baseclass()
 
 class MaxSessionPublishPlugin(HookBaseClass):
     """
-    Plugin for publishing an open maya session.
+    Plugin for publishing an open max session.
 
     This hook relies on functionality found in the base file publisher hook in
     the publish2 app and should inherit from it in the configuration. The hook
@@ -226,7 +226,7 @@ class MaxSessionPublishPlugin(HookBaseClass):
                     extra={
                         "action_button": {
                             "label": "Save File",
-                            "tooltip": "Save the current Maya session to a "
+                            "tooltip": "Save the current Max session to a "
                                        "different file name",
                             # will launch wf2 if configured
                             "callback": _get_save_as_action()
