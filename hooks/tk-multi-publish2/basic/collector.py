@@ -105,6 +105,8 @@ class MaxSessionCollector(HookBaseClass):
                 }
             )
 
+        self.collect_session_geometry(item)
+
     def collect_current_max_session(self, settings, parent_item):
         """
         Creates an item that represents the current max session.
@@ -244,6 +246,37 @@ class MaxSessionCollector(HookBaseClass):
             # the item has been created. update the display name to include
             # the an indication of what it is and why it was collected
             item.name = "%s (%s)" % (item.name, "preview")
+
+    def collection_session_geometry(self, parent_item):
+        """
+        Creates items for session geometry to be exported.
+
+        :param parent_item: Parent Item instance
+        """
+
+        # If there are objects in the scene, then we will register
+        # a geometry item. This is a bit simplistic in it's approach
+        # to determining whether there's exportable data in the scene
+        # that's useful when exported as an Alembic cache, but it will
+        # work in most cases.
+        if not list(MaxPlus.Core.GetRootNode().Children):
+            return
+
+        geo_item = parent_item.create_item(
+            "3dsmax.session.geometry",
+            "Geometry",
+            "All Session Geometry"
+        )
+
+        # get the icon path to display for this item
+        icon_path = os.path.join(
+            self.disk_location,
+            os.pardir,
+            "icons",
+            "geometry.png"
+        )
+
+        geo_item.set_icon_from_path(icon_path)
 
 
 def _set_project():
