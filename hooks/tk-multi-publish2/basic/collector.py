@@ -247,7 +247,7 @@ class MaxSessionCollector(HookBaseClass):
             # the an indication of what it is and why it was collected
             item.name = "%s (%s)" % (item.name, "preview")
 
-    def collection_session_geometry(self, parent_item):
+    def collect_session_geometry(self, parent_item):
         """
         Creates items for session geometry to be exported.
 
