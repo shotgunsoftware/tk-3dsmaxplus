@@ -12,6 +12,7 @@ import os
 import pprint
 import MaxPlus
 import sgtk
+from sgtk.utils.filesystem import ensure_folder_exists
 
 HookBaseClass = sgtk.get_hook_baseclass()
 
@@ -345,6 +346,9 @@ def _save_session(path):
     """
     Save the current session to the supplied path.
     """
+    # max won't ensure that the folder is created when saving, so we must make sure it exists
+    folder = os.path.dirname(path)
+    ensure_folder_exists(folder)
     MaxPlus.FileManager.Save(path)
 
 
