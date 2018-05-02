@@ -12,7 +12,7 @@ import os
 import pprint
 import MaxPlus
 import sgtk
-from sgtk.utils.filesystem import ensure_folder_exists
+from sgtk.util.filesystem import ensure_folder_exists
 
 HookBaseClass = sgtk.get_hook_baseclass()
 
