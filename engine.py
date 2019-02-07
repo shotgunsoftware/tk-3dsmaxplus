@@ -149,9 +149,19 @@ class MaxEngine(sgtk.platform.Engine):
         # set up a qt style sheet
         # note! - try to be smart about this and only run
         # the style setup once per session - it looks like
-        # 3dsmax slows down if this is executed every engine restart. 
-        qt_app_obj = sgtk.platform.qt.QtCore.QCoreApplication.instance()
-        curr_stylesheet = qt_app_obj.styleSheet()
+        # 3dsmax slows down if this is executed every engine restart.
+        #
+        # If we're in pre-Qt Max (before 2018) then we'll need to apply the
+        # stylesheet to the QApplication. That's not safe in 2019.3+, as it's
+        # possible that we'll get back a QCoreApplication from Max, which won't
+        # carry references to a stylesheet. In that case, we apply our styling
+        # to the dialog parent, which will be the top-level Max window. 
+        if self._max_version_to_year(self._get_max_version()) < 2018:
+            parent_widget = sgtk.platform.qt.QtCore.QCoreApplication.instance()
+        else:
+            parent_widget = self._get_dialog_parent()
+
+        curr_stylesheet = parent_widget.styleSheet()
 
         if "toolkit 3dsmax style extension" not in curr_stylesheet:
             # If we're in pre-2017 Max then we need to handle our own styling. Otherwise
@@ -161,7 +171,7 @@ class MaxEngine(sgtk.platform.Engine):
 
             curr_stylesheet += "\n\n /* toolkit 3dsmax style extension */ \n\n"
             curr_stylesheet += "\n\n QDialog#TankDialog > QWidget { background-color: #343434; }\n\n"        
-            qt_app_obj.setStyleSheet(curr_stylesheet) 
+            parent_widget.setStyleSheet(curr_stylesheet) 
 
         # This needs to be present for apps as it will be used in show_dialog when perforce asks for login
         # info very early on.
