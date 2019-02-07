@@ -149,8 +149,18 @@ class MaxEngine(sgtk.platform.Engine):
         # set up a qt style sheet
         # note! - try to be smart about this and only run
         # the style setup once per session - it looks like
-        # 3dsmax slows down if this is executed every engine restart. 
-        parent_widget = self._get_dialog_parent()
+        # 3dsmax slows down if this is executed every engine restart.
+        #
+        # If we're in pre-Qt Max (before 2018) then we'll need to apply the
+        # stylesheet to the QApplication. That's not safe in 2019.3+, as it's
+        # possible that we'll get back a QCoreApplication from Max, which won't
+        # carry references to a stylesheet. In that case, we apply our styling
+        # to the dialog parent, which will be the top-level Max window. 
+        if self._max_version_to_year(self._get_max_version()) < 2018:
+            parent_widget = sgtk.platform.qt.QtCore.QCoreApplication.instance()
+        else:
+            parent_widget = self._get_dialog_parent()
+
         curr_stylesheet = parent_widget.styleSheet()
 
         if "toolkit 3dsmax style extension" not in curr_stylesheet:
