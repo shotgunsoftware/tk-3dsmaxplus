@@ -354,6 +354,20 @@ class MaxEngine(sgtk.platform.Engine):
     ##########################################################################################
     # Engine
 
+    def _get_dialog_parent(self):
+        """
+        Get the QWidget parent for all dialogs created through :meth:`show_dialog` :meth:`show_modal`.
+
+        :return: QT Parent window (:class:`PySide.QtGui.QWidget`)
+        """
+        # Older versions of Max make use of special logic in _create_dialog
+        # to handle window parenting. If we can, though, we should go with
+        # the more standard approach to getting the main window.
+        if self._max_version_to_year(self._get_max_version()) > 2019:
+            return MaxPlus.GetQMaxMainWindow()
+        else:
+            return super(MaxEngine, self)._get_dialog_parent()
+
     def show_panel(self, panel_id, title, bundle, widget_class, *args, **kwargs):
         """
         Docks an app widget in a 3dsmax panel.
@@ -456,8 +470,8 @@ class MaxEngine(sgtk.platform.Engine):
         # enough version of 3ds Max. Anything short of 2016 SP1 is going to
         # fail here with an AttributeError, so we can just catch that and
         # continue on without the new-style parenting.
-        previous_parent = dialog.parent()
-        if self._parent_to_max:
+        if self._parent_to_max and self._max_version_to_year(self._get_max_version()) <= 2019:
+            previous_parent = dialog.parent()
             try:
                 self.log_debug("Attempting to attach dialog to 3ds Max...")
                 # widget must be parentless when calling MaxPlus.AttachQWidgetToMax
