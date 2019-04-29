@@ -37,7 +37,11 @@ def bootstrap_sgtk_classic():
         error("Shotgun: Could not import sgtk! Disabling for now: %s" % e)
         return
 
+    sgtk.LogManager().initialize_base_file_handler("tk-3dsmaxplus")
+    logger = sgtk.LogManager.get_logger(__name__)
+
     if not "TANK_ENGINE" in os.environ:
+        logger.error("Shotgun: Missing required environment variable TANK_ENGINE.")
         error("Shotgun: Missing required environment variable TANK_ENGINE.")
         return
 
@@ -45,14 +49,24 @@ def bootstrap_sgtk_classic():
     try:
         context = sgtk.context.deserialize(os.environ.get("TANK_CONTEXT"))
     except Exception, e:
+        logger.exception("Shotgun: Could not create context! sgtk will be disabled.")
         error("Shotgun: Could not create context! sgtk will be disabled. Details: %s" % e)
         return
 
     try:
-        sgtk.platform.start_engine(engine_name, context.tank, context)
+        try:
+            sgtk.platform.start_engine(engine_name, context.tank, context)
+        except:
+            logger.exception("Shotgun: Could not start engine, going to try again")
+            import time
+            time.sleep(2)
+            # wait a short duration and try again
+            sgtk.platform.start_engine(engine_name, context.tank, context)
     except Exception, e:
+        logger.exception("Shotgun: Could not start engine")
         error("Shotgun: Could not start engine: %s" % e)
         return
+
 
 def bootstrap_sgtk_with_plugins():
     """
@@ -108,10 +122,11 @@ def bootstrap_sgtk():
     if file_to_open:
         MaxPlus.FileManager.Open(file_to_open)
 
-    # clean up temp env vars
-    for var in ["TANK_ENGINE", "TANK_CONTEXT", "TANK_FILE_TO_OPEN",
-                "SGTK_LOAD_MAX_PLUGINS"]:
-        if var in os.environ:
-            del os.environ[var]
+    # # clean up temp env vars
+    # for var in ["TANK_ENGINE", "TANK_CONTEXT", "TANK_FILE_TO_OPEN",
+    #             "SGTK_LOAD_MAX_PLUGINS"]:
+    #     if var in os.environ:
+    #         del os.environ[var]
+
 
 bootstrap_sgtk()
