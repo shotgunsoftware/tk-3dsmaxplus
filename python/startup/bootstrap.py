@@ -54,14 +54,7 @@ def bootstrap_sgtk_classic():
         return
 
     try:
-        try:
-            sgtk.platform.start_engine(engine_name, context.tank, context)
-        except:
-            logger.exception("Shotgun: Could not start engine, going to try again")
-            import time
-            time.sleep(2)
-            # wait a short duration and try again
-            sgtk.platform.start_engine(engine_name, context.tank, context)
+        sgtk.platform.start_engine(engine_name, context.tank, context)
     except Exception, e:
         logger.exception("Shotgun: Could not start engine")
         error("Shotgun: Could not start engine: %s" % e)
