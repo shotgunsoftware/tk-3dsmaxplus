@@ -120,5 +120,4 @@ def bootstrap_sgtk():
         if var in os.environ:
             del os.environ[var]
 
-
 bootstrap_sgtk()
