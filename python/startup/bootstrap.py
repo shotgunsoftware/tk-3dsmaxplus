@@ -60,7 +60,6 @@ def bootstrap_sgtk_classic():
         error("Shotgun: Could not start engine: %s" % e)
         return
 
-
 def bootstrap_sgtk_with_plugins():
     """
     Parse environment variables for a list of plugins to load that will
@@ -115,11 +114,11 @@ def bootstrap_sgtk():
     if file_to_open:
         MaxPlus.FileManager.Open(file_to_open)
 
-    # # clean up temp env vars
-    # for var in ["TANK_ENGINE", "TANK_CONTEXT", "TANK_FILE_TO_OPEN",
-    #             "SGTK_LOAD_MAX_PLUGINS"]:
-    #     if var in os.environ:
-    #         del os.environ[var]
+    # clean up temp env vars
+    for var in ["TANK_ENGINE", "TANK_CONTEXT", "TANK_FILE_TO_OPEN",
+                "SGTK_LOAD_MAX_PLUGINS"]:
+        if var in os.environ:
+            del os.environ[var]
 
 
 bootstrap_sgtk()
