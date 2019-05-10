@@ -34,10 +34,14 @@ def bootstrap_sgtk_classic():
     try:
         import sgtk
     except Exception, e:
-        error("Shotgun: Could not import sgtk! Disabling for now: %s" % e)
+        error("Could not import sgtk! Disabling for now: %s" % e)
         return
 
+    sgtk.LogManager().initialize_base_file_handler("tk-3dsmaxplus")
+    logger = sgtk.LogManager.get_logger(__name__)
+
     if not "TANK_ENGINE" in os.environ:
+        logger.error("Missing required environment variable TANK_ENGINE.")
         error("Shotgun: Missing required environment variable TANK_ENGINE.")
         return
 
@@ -45,12 +49,14 @@ def bootstrap_sgtk_classic():
     try:
         context = sgtk.context.deserialize(os.environ.get("TANK_CONTEXT"))
     except Exception, e:
+        logger.exception("Could not create context! sgtk will be disabled.")
         error("Shotgun: Could not create context! sgtk will be disabled. Details: %s" % e)
         return
 
     try:
         sgtk.platform.start_engine(engine_name, context.tank, context)
     except Exception, e:
+        logger.exception("Could not start engine")
         error("Shotgun: Could not start engine: %s" % e)
         return
 

@@ -363,7 +363,7 @@ class MaxEngine(sgtk.platform.Engine):
         # Older versions of Max make use of special logic in _create_dialog
         # to handle window parenting. If we can, though, we should go with
         # the more standard approach to getting the main window.
-        if self._max_version_to_year(self._get_max_version()) > 2019:
+        if self._max_version_to_year(self._get_max_version()) > 2017:
             return MaxPlus.GetQMaxMainWindow()
         else:
             return super(MaxEngine, self)._get_dialog_parent()
