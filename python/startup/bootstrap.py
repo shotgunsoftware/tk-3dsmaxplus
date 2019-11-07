@@ -110,12 +110,12 @@ def bootstrap_sgtk():
         bootstrap_sgtk_classic()
 
     # if a file was specified, load it now
-    file_to_open = os.environ.get("TANK_FILE_TO_OPEN")
+    file_to_open = os.environ.get("SGTK_FILE_TO_OPEN")
     if file_to_open:
         MaxPlus.FileManager.Open(file_to_open)
 
     # clean up temp env vars
-    for var in ["TANK_ENGINE", "TANK_CONTEXT", "TANK_FILE_TO_OPEN",
+    for var in ["TANK_ENGINE", "TANK_CONTEXT", "SGTK_FILE_TO_OPEN",
                 "SGTK_LOAD_MAX_PLUGINS"]:
         if var in os.environ:
             del os.environ[var]
