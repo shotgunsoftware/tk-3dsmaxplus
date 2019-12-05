@@ -23,7 +23,7 @@
    <item>
     <widget class="QLabel" name="message">
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The tk-3dsmaxplus engine has been deprecated. We recommend that you upgrade your configuration to the new &lt;a href=&quot;https://github.com/shotgunsoftware/tk-3dsmax&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#23a5e1;&quot;&gt;tk-3dsmax&lt;/span&gt;&lt;/a&gt; engine. Versions of 3dsMax 2021 and up will only be supported by the new engine.&lt;/p&gt;&lt;p&gt;Visit this &lt;a href=&quot;http://developer.shotgunsoftware.com/tk-3dsmax&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#23a5e1;&quot;&gt;page&lt;/span&gt;&lt;/a&gt; if you want to learn more on how to migrate your environment to the new engine.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The tk-3dsmaxplus engine has been deprecated. We recommend that you upgrade your configuration to the new &lt;a href=&quot;https://github.com/shotgunsoftware/tk-3dsmax&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#23a5e1;&quot;&gt;tk-3dsmax&lt;/span&gt;&lt;/a&gt; engine. Versions of 3dsMax 2021 and up will only be supported by the new engine.&lt;/p&gt;&lt;p&gt;Visit &lt;a href=&quot;https://developer.shotgunsoftware.com/tk-3dsmax&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#23a5e1;&quot;&gt;this page&lt;/span&gt;&lt;/a&gt; if you want to learn more on how to migrate your environment to the new engine.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
