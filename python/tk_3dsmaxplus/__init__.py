@@ -10,3 +10,4 @@
 
 from .menu_generation import MenuGenerator
 from .maxscript import MaxScript
+from .update_engine import show_update_dialog

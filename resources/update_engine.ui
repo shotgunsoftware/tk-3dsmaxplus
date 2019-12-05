@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>UpdateEngineBox</class>
+ <widget class="QDialog" name="UpdateEngineBox">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>489</width>
+    <height>148</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>tk-3dsmaxplus deprecation warning</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>5</number>
+   </property>
+   <property name="margin">
+    <number>12</number>
+   </property>
+   <item>
+    <widget class="QLabel" name="message">
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The tk-3dsmaxplus engine has been deprecated. We recommend that you upgrade your configuration to the new &lt;a href=&quot;https://github.com/shotgunsoftware/tk-3dsmax&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#23a5e1;&quot;&gt;tk-3dsmax&lt;/span&gt;&lt;/a&gt; engine.&lt;/p&gt;&lt;p&gt;Visit this &lt;a href=&quot;http://developer.shotgunsoftware.com/tk-3dsmax&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#23a5e1;&quot;&gt;page&lt;/span&gt;&lt;/a&gt; if you want to learn more on how to migrate your environment to the new engine.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+     <property name="openExternalLinks">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item alignment="Qt::AlignHCenter">
+    <widget class="QCheckBox" name="never_again_checkbox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Do not show this again.</string>
+     </property>
+    </widget>
+   </item>
+   <item alignment="Qt::AlignHCenter">
+    <widget class="QPushButton" name="ok_button">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>OK</string>
+     </property>
+     <property name="default">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>ok_button</sender>
+   <signal>clicked()</signal>
+   <receiver>UpdateEngineBox</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>210</x>
+     <y>348</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>210</x>
+     <y>184</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

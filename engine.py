@@ -229,6 +229,8 @@ class MaxEngine(sgtk.platform.Engine):
         # Run a series of app instance commands at startup.
         self._run_app_instance_commands()
 
+        self.async_execute_in_main_thread(self.tk_3dsmax.show_update_dialog)
+
     def post_context_change(self, old_context, new_context):
         """
         Handles necessary processing after a context change has been completed
