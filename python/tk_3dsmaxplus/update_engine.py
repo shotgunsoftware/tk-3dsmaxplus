@@ -12,52 +12,47 @@
 Displays a message inviting the user to switch their Max engine to tk-3dsmax.
 """
 
-import contextlib
-import os
+import sgtk
+from sgtk.platform.qt import QtCore, QtGui
+from .ui.update_engine import Ui_UpdateEngine
 
-# Try to import QtCore and QtGui. If it doesn't work, this means we're not
-# inside 3dsmax and just trying out the GUI from a console.
-try:
-    from sgtk.platform.qt import QtCore, QtGui
-    from sgtk.platform.qt5.QtUiTools import QUiLoader
+settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings")
 
-except Exception:
-    from PySide2 import QtCore, QtWidgets as QtGui
-    from PySide2.QtUiTools import QUiLoader
 
-    def _should_skip_dialog():
+class UpdateEngineDlg(QtGui.QDialog):
+    """
+    The Update Engine dialog. It displays a deprecation message with a checkbox to
+    choose not to see this message ever again.
+    """
+    def __init__(self, parent=None):
+        super(UpdateEngineDlg, self).__init__(parent)
+        self._ui = Ui_UpdateEngine()
+        self._ui.setupUi(self)
+
+    def is_never_again_checked(self):
         """
-        For testing, the dialog should always be shown.
+        :returns: ``True`` is the user does not want to see the dialog ever again,
+        ``False`` otherwise.
         """
-        return False
-
-    def _skip_dialog():
-        """
-        For testing, nothing to do here.
-        """
-        pass
+        return self._ui.never_again_checkbox.isChecked()
 
 
-else:
-    import sgtk
+def _should_skip_dialog():
+    """
+    :returns: ``True`` if the user dismissed the dialog with "Do not show this again"
+        checked in the past, ``False`` otherwise.
+    """
+    settings_manager = settings.UserSettings(sgtk.platform.current_bundle())
+    skip_dialog = settings_manager.retrieve("skip_update_engine_dialog", False)
+    return skip_dialog
 
-    settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings")
 
-    def _should_skip_dialog():
-        """
-        :returns: ``True`` if the user dismissed the dialog with "Do not show this again"
-            checked in the past, ``False`` otherwise.
-        """
-        settings_manager = settings.UserSettings(sgtk.platform.current_bundle())
-        skip_dialog = settings_manager.retrieve("skip_update_engine_dialog", False)
-        return skip_dialog
-
-    def _skip_dialog():
-        """
-        Update user settings so that the dialog is never shown again.
-        """
-        settings_manager = settings.UserSettings(sgtk.platform.current_bundle())
-        settings_manager.store("skip_update_engine_dialog", True)
+def _skip_dialog():
+    """
+    Update user settings so that the dialog is never shown again.
+    """
+    settings_manager = settings.UserSettings(sgtk.platform.current_bundle())
+    settings_manager.store("skip_update_engine_dialog", True)
 
 
 def _show_dialog():
@@ -67,18 +62,9 @@ def _show_dialog():
     :returns: ``True`` if the user requested the dialog to never be shown
         again, ``False`` otherwise.
     """
-    resource = os.path.join(
-        os.path.dirname(__file__), "..", "..", "resources", "update_engine.ui"
-    )
-    with contextlib.closing(QtCore.QFile(resource)) as resource_file:
-        loader = QUiLoader()
-        dialog = loader.load(resource_file)
-
-    checkbox = dialog.findChild(QtGui.QCheckBox, "never_again_checkbox")
-
+    dialog = UpdateEngineDlg()
     dialog.exec_()
-
-    return checkbox.isChecked()
+    return dialog.is_never_again_checked()
 
 
 def show_update_dialog():
@@ -96,10 +82,3 @@ def show_update_dialog():
 
     if skip_dialog_on_next_startup:
         _skip_dialog()
-
-
-if __name__ == "__main__":
-    # This is for testing from the command line.
-    if QtGui.QApplication.instance() is None:
-        QtGui.QApplication([])
-    show_update_dialog()
