@@ -13,7 +13,6 @@ Displays a message inviting the user to switch their Max engine to tk-3dsmax.
 """
 
 import sgtk
-from sgtk.platform.qt import QtCore, QtGui
 from .ui.update_engine import Ui_UpdateEngine
 
 settings = sgtk.platform.import_framework("tk-framework-shotgunutils", "settings")
