@@ -229,7 +229,10 @@ class MaxEngine(sgtk.platform.Engine):
         # Run a series of app instance commands at startup.
         self._run_app_instance_commands()
 
-        self.async_execute_in_main_thread(self.tk_3dsmax.show_update_dialog)
+        # The new engine is supported only for Max 2017 and up, so recommend an update
+        # only for those users.
+        if self._max_version_to_year(self._get_max_version()) >= 2017:
+            self.async_execute_in_main_thread(self.tk_3dsmax.show_update_dialog)
 
     def post_context_change(self, old_context, new_context):
         """
