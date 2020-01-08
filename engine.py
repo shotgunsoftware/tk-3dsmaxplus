@@ -244,12 +244,6 @@ class MaxEngine(sgtk.platform.Engine):
             return
         self.show_dialog("tk-3dsmaxplus deprecation notice", self, self.tk_3dsmax.UpdateEngineDlg)
 
-    def _on_update_dialog_closed(self):
-        """
-        Clear reference to dead update dialog.
-        """
-        del self._update_dialog
-
     def post_context_change(self, old_context, new_context):
         """
         Handles necessary processing after a context change has been completed

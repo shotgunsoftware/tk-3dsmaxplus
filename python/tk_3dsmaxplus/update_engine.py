@@ -36,6 +36,9 @@ class UpdateEngineDlg(QtGui.QDialog):
         return settings_manager.retrieve("skip_update_engine_dialog", False)
 
     def __init__(self, parent=None):
+        """
+        Init.
+        """
         super(UpdateEngineDlg, self).__init__(parent)
         self._ui = Ui_UpdateEngine()
         self._ui.setupUi(self)
