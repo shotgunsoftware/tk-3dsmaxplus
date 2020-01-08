@@ -24,8 +24,16 @@ class UpdateEngineDlg(QtGui.QDialog):
     The Update Engine dialog. It displays a deprecation message with a checkbox to
     choose not to see this message ever again.
     """
+    hide_tk_title_bar = True
 
-    closing = QtCore.Signal()
+    @classmethod
+    def should_skip_dialog(cls):
+        """
+        :returns: ``True`` if the user dismissed the dialog with "Do not show this again"
+            checked in the past, ``False`` otherwise.
+        """
+        settings_manager = settings.UserSettings(sgtk.platform.current_bundle())
+        return settings_manager.retrieve("skip_update_engine_dialog", False)
 
     def __init__(self, parent=None):
         super(UpdateEngineDlg, self).__init__(parent)
@@ -38,45 +46,19 @@ class UpdateEngineDlg(QtGui.QDialog):
         Dismiss the dialog and records the state of the checkbox if clicked.
         """
         if self._ui.never_again_checkbox.isChecked():
-            _skip_dialog()
-        self.closing.emit()
+            self._skip_dialog()
         self.close()
 
-
-def _should_skip_dialog():
-    """
-    :returns: ``True`` if the user dismissed the dialog with "Do not show this again"
-        checked in the past, ``False`` otherwise.
-    """
-    settings_manager = settings.UserSettings(sgtk.platform.current_bundle())
-    skip_dialog = settings_manager.retrieve("skip_update_engine_dialog", False)
-    return skip_dialog
+    def _skip_dialog(self):
+        """
+        Update user settings so that the dialog is never shown again.
+        """
+        settings_manager = settings.UserSettings(sgtk.platform.current_bundle())
+        settings_manager.store("skip_update_engine_dialog", True)
 
 
-def _show_dialog(parent):
-    """
-    Show the dialog warning the user about the deprecation.
-
-    :returns: ``True`` if the user requested the dialog to never be shown
-        again, ``False`` otherwise.
-    """
-    dialog = UpdateEngineDlg(parent)
-    dialog.show()
-    dialog.raise_()
-    dialog.activateWindow()
-
-    return dialog
 
 
-def show_update_dialog(parent):
-    """
-    Show the update warning dialog.
 
-    If the user checked "Do not show this dialog again." in the past,
-    the method will do nothing.
-    """
 
-    if _should_skip_dialog():
-        return
 
-    return _show_dialog(parent)

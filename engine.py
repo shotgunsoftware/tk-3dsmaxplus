@@ -240,8 +240,9 @@ class MaxEngine(sgtk.platform.Engine):
         """
         # We need to keep a ref of the dialog or PySide/Python will garbage collect it before
         # the user dismisses it.
-        self._update_dialog = self.tk_3dsmax.show_update_dialog(self._get_dialog_parent())
-        self._update_dialog.closing.connect(self._on_update_dialog_closed)
+        if self.tk_3dsmax.UpdateEngineDlg.should_skip_dialog():
+            return
+        self.show_dialog("tk-3dsmaxplus deprecation notice", self, self.tk_3dsmax.UpdateEngineDlg)
 
     def _on_update_dialog_closed(self):
         """
