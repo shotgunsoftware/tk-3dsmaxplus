@@ -24,17 +24,23 @@ class UpdateEngineDlg(QtGui.QDialog):
     The Update Engine dialog. It displays a deprecation message with a checkbox to
     choose not to see this message ever again.
     """
+
+    closing = QtCore.Signal()
+
     def __init__(self, parent=None):
         super(UpdateEngineDlg, self).__init__(parent)
         self._ui = Ui_UpdateEngine()
         self._ui.setupUi(self)
+        self._ui.ok_button.clicked.connect(self._on_ok_clicked)
 
-    def is_never_again_checked(self):
+    def _on_ok_clicked(self):
         """
-        :returns: ``True`` is the user does not want to see the dialog ever again,
-        ``False`` otherwise.
+        Dismiss the dialog and records the state of the checkbox if clicked.
         """
-        return self._ui.never_again_checkbox.isChecked()
+        if self._ui.never_again_checkbox.isChecked():
+            _skip_dialog()
+        self.closing.emit()
+        self.close()
 
 
 def _should_skip_dialog():
@@ -47,27 +53,22 @@ def _should_skip_dialog():
     return skip_dialog
 
 
-def _skip_dialog():
-    """
-    Update user settings so that the dialog is never shown again.
-    """
-    settings_manager = settings.UserSettings(sgtk.platform.current_bundle())
-    settings_manager.store("skip_update_engine_dialog", True)
-
-
-def _show_dialog():
+def _show_dialog(parent):
     """
     Show the dialog warning the user about the deprecation.
 
     :returns: ``True`` if the user requested the dialog to never be shown
         again, ``False`` otherwise.
     """
-    dialog = UpdateEngineDlg()
-    dialog.exec_()
-    return dialog.is_never_again_checked()
+    dialog = UpdateEngineDlg(parent)
+    dialog.show()
+    dialog.raise_()
+    dialog.activateWindow()
+
+    return dialog
 
 
-def show_update_dialog():
+def show_update_dialog(parent):
     """
     Show the update warning dialog.
 
@@ -78,7 +79,4 @@ def show_update_dialog():
     if _should_skip_dialog():
         return
 
-    skip_dialog_on_next_startup = _show_dialog()
-
-    if skip_dialog_on_next_startup:
-        _skip_dialog()
+    return _show_dialog(parent)

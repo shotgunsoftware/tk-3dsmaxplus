@@ -47,7 +47,6 @@ class Ui_UpdateEngine(object):
         self.verticalLayout.addLayout(self.horizontalLayout_2)
 
         self.retranslateUi(UpdateEngine)
-        QtCore.QObject.connect(self.ok_button, QtCore.SIGNAL("clicked()"), UpdateEngine.close)
         QtCore.QMetaObject.connectSlotsByName(UpdateEngine)
 
     def retranslateUi(self, UpdateEngine):

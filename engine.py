@@ -232,7 +232,22 @@ class MaxEngine(sgtk.platform.Engine):
         # The new engine is supported only for Max 2017 and up, so recommend an update
         # only for those users.
         if self._max_version_to_year(self._get_max_version()) >= 2017:
-            self.async_execute_in_main_thread(self.tk_3dsmax.show_update_dialog)
+            self.async_execute_in_main_thread(self._show_update_dialog)
+
+    def _show_update_dialog(self):
+        """
+        Display the Update Engine dialog.
+        """
+        # We need to keep a ref of the dialog or PySide/Python will garbage collect it before
+        # the user dismisses it.
+        self._update_dialog = self.tk_3dsmax.show_update_dialog(self._get_dialog_parent())
+        self._update_dialog.closing.connect(self._on_update_dialog_closed)
+
+    def _on_update_dialog_closed(self):
+        """
+        Clear reference to dead update dialog.
+        """
+        del self._update_dialog
 
     def post_context_change(self, old_context, new_context):
         """

@@ -83,22 +83,5 @@
   </layout>
  </widget>
  <resources/>
- <connections>
-  <connection>
-   <sender>ok_button</sender>
-   <signal>clicked()</signal>
-   <receiver>UpdateEngine</receiver>
-   <slot>close()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>211</x>
-     <y>149</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>211</x>
-     <y>88</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>
