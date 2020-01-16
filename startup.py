@@ -23,6 +23,29 @@ class MaxLauncher(SoftwareLauncher):
     of 3dsMax.
     """
 
+    def _is_supported(self, sw_version):
+        """
+        Indicate if the version of 3dsmax is supported. In additional
+        to the usual validation that the base class provides,
+        the method makes sure that versions greater than 2020 are
+        not supported.
+        """
+        # First check the default implementation.
+        supported, reason = super(MaxLauncher, self)._is_supported(sw_version)
+        if not supported:
+            return (supported, reason)
+
+        # We don't know which version this is, let it through.
+        if sw_version.version is None:
+            return (True, "")
+
+        # The maxplus engine only supports Max 2020 and down.
+        # Clients who wish to use 2021 must switch to tk-3dsmax.
+        if int(sw_version.version) <= 2020:
+            return (True, "")
+        else:
+            return (False, "The tk-3dsmaxplus engine only supports versions 2020 and older.")
+
     @property
     def minimum_supported_version(self):
         """

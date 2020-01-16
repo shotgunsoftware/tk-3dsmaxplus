@@ -1,3 +1,10 @@
+## Deprecation notice
+
+The tk-3dsmaxplus engine has been deprecated. We recommend that you upgrade your configuration to the new [tk-3dsmax](https://github.com/shotgunsoftware/tk-3dsmax) engine. Versions of 3dsMax 2021 and up will only be supported by the new engine.
+
+Visit [this page](https://developer.shotgunsoftware.com/tk-3dsmax) if you want to learn more
+on how to migrate your environment to the new engine.
+
 ## Documentation
 This repository is a part of the Shotgun Pipeline Toolkit.
 

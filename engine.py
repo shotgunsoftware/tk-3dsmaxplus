@@ -229,6 +229,21 @@ class MaxEngine(sgtk.platform.Engine):
         # Run a series of app instance commands at startup.
         self._run_app_instance_commands()
 
+        # The new engine is supported only for Max 2017 and up, so recommend an update
+        # only for those users.
+        if self._max_version_to_year(self._get_max_version()) >= 2017:
+            self.async_execute_in_main_thread(self._show_update_dialog)
+
+    def _show_update_dialog(self):
+        """
+        Display the Update Engine dialog.
+        """
+        # We need to keep a ref of the dialog or PySide/Python will garbage collect it before
+        # the user dismisses it.
+        if self.tk_3dsmax.UpdateEngineDlg.should_skip_dialog():
+            return
+        self.show_dialog("tk-3dsmaxplus deprecation notice", self, self.tk_3dsmax.UpdateEngineDlg)
+
     def post_context_change(self, old_context, new_context):
         """
         Handles necessary processing after a context change has been completed
