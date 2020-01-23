@@ -77,7 +77,7 @@ description: "Shotgun Integration in 3ds Max Plus"
 
 # Required minimum versions for this item to run
 requires_shotgun_version:
-requires_core_version: "v0.18.45"
+requires_core_version: "v0.19.1"
 
 frameworks:
     - {"name": "tk-framework-shotgunutils", "version": "v5.x.x", "minimum_version": "v5.2.2"}
