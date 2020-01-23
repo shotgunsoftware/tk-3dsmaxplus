@@ -63,7 +63,7 @@ class MaxLauncher(SoftwareLauncher):
 
         self.logger.debug("Scanning for 3dsMax executables...")
 
-        if sgtk.util.is_windows():
+        if sgtk.util.is_windows() is False:
             # max only exists on windows
             return []
 
@@ -139,7 +139,7 @@ class MaxLauncher(SoftwareLauncher):
             # classic bootstrap approach.
             self.logger.debug("Preparing 3dsMax Launch via Toolkit Classic methodology ...")
             required_env["TANK_ENGINE"] = self.engine_name
-            required_env["TANK_CONTEXT"] = context.serialize(use_json=True)
+            required_env["TANK_CONTEXT"] = self.context.serialize(use_json=True)
 
         if file_to_open:
             # Add the file name to open to the launch environment
