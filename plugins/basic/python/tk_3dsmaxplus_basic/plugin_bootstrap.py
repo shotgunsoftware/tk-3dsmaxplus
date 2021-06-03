@@ -51,7 +51,7 @@ def bootstrap_toolkit(root_path):
     #   configuration, core already exists in the pythonpath.
 
     # Display temporary message in prompt line for maximum 5 secs.
-    MaxPlus.StatusPanel.DisplayTempPrompt("Loading Shotgun integration...", 5000)
+    MaxPlus.StatusPanel.DisplayTempPrompt("Loading ShotGrid integration...", 5000)
 
     # Remember path, to handle logout/login
     PluginProperties.plugin_root_path = root_path
@@ -100,9 +100,9 @@ def progress_callback(progress_value, message):
     :param message:        Progress message string
     """
 
-    print "Shotgun: %s" % message
+    print "ShotGrid: %s" % message
     # Display temporary message in prompt line for maximum 2 secs.
-    MaxPlus.StatusPanel.DisplayTempPrompt("Shotgun: %s" % message, 2000)
+    MaxPlus.StatusPanel.DisplayTempPrompt("ShotGrid: %s" % message, 2000)
 
 
 def handle_bootstrap_completed(engine):
@@ -114,12 +114,12 @@ def handle_bootstrap_completed(engine):
     :param engine: Launched :class:`sgtk.platform.Engine` instance.
     """
 
-    print "Shotgun: Bootstrap successfully."
+    print "ShotGrid: Bootstrap successfully."
 
     # Add a logout menu item to the engine context menu only when
     # running as standalone plugin.
     if PluginProperties.running_as_standalone_plugin:
-        engine.register_command("Log Out of Shotgun", _on_logout, {"type": "context_menu"})
+        engine.register_command("Log Out of ShotGrid", _on_logout, {"type": "context_menu"})
         engine.update_shotgun_menu()
 
 
@@ -134,7 +134,7 @@ def handle_bootstrap_failed(phase, exception):
     :param exception: Python exception raised while bootstrapping.
     """
 
-    print "Shotgun: Bootstrap failed. %s" % exception
+    print "ShotGrid: Bootstrap failed. %s" % exception
     _create_login_menu()
 
 
@@ -147,13 +147,13 @@ def shutdown_toolkit():
     engine = sgtk.platform.current_engine()
 
     if engine:
-        logger.info("Stopping the Shotgun engine.")
+        logger.info("Stopping the ShotGrid engine.")
         # Close the various windows (dialogs, panels, etc.) opened by the engine.
         engine.close_windows()
         # Turn off your engine! Step away from the car!
         engine.destroy()
     else:
-        logger.debug("The Shotgun engine was already stopped!")
+        logger.debug("The ShotGrid engine was already stopped!")
 
 
 def _on_logout():
@@ -194,7 +194,7 @@ def _login_user():
     except sgtk.authentication.AuthenticationCancelled:
         # When the user cancelled the Shotgun login dialog,
         # keep around the displayed login menu.
-        sgtk_logger.info("Shotgun login was cancelled by the user.")
+        sgtk_logger.info("ShotGrid login was cancelled by the user.")
         return
 
     _delete_login_menu()
@@ -235,16 +235,16 @@ def _create_login_menu():
 
     mb = MaxPlus.MenuBuilder(constants.SG_MENU_LABEL)
     login_action = MaxPlus.ActionFactory.Create(
-        constants.SG_MENU_ITEMS_CATEGORY, "Log In to Shotgun...", _login_user)
+        constants.SG_MENU_ITEMS_CATEGORY, "Log In to ShotGrid...", _login_user)
     mb.AddItem(login_action)
     mb.AddSeparator()
 
     jump_to_website_action = MaxPlus.ActionFactory.Create(
-        constants.SG_MENU_ITEMS_CATEGORY, "Learn about Shotgun...", _jump_to_website)
+        constants.SG_MENU_ITEMS_CATEGORY, "Learn about ShotGrid...", _jump_to_website)
     mb.AddItem(jump_to_website_action)
 
     jump_to_signup_action = MaxPlus.ActionFactory.Create(
-        constants.SG_MENU_ITEMS_CATEGORY, "Try Shotgun for Free...", _jump_to_signup)
+        constants.SG_MENU_ITEMS_CATEGORY, "Try ShotGrid for Free...", _jump_to_signup)
     mb.AddItem(jump_to_signup_action)
 
     main_menu = MaxPlus.MenuManager.GetMainMenu()
@@ -276,7 +276,7 @@ def _jump_to_website():
     QtCore = qt_importer.QtCore
     QtGui = qt_importer.QtGui
 
-    QtGui.QDesktopServices.openUrl(QtCore.QUrl("https://www.shotgunsoftware.com"))
+    QtGui.QDesktopServices.openUrl(QtCore.QUrl("https://www.shotgridsoftware.com"))
 
 
 def _jump_to_signup():
@@ -291,7 +291,7 @@ def _jump_to_signup():
     QtCore = qt_importer.QtCore
     QtGui = qt_importer.QtGui
 
-    QtGui.QDesktopServices.openUrl(QtCore.QUrl("https://www.shotgunsoftware.com/signup"))
+    QtGui.QDesktopServices.openUrl(QtCore.QUrl("https://www.shotgridsoftware.com/signup"))
 
 
 def _get_plugin_info():

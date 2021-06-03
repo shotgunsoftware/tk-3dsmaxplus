@@ -72,8 +72,8 @@ configuration:
 requires_shotgun_fields:
 
 # More verbose description of this item
-display_name: "Shotgun Engine for 3ds Max Plus"
-description: "Shotgun Integration in 3ds Max Plus"
+display_name: "ShotGrid Engine for 3ds Max Plus"
+description: "ShotGrid Integration in 3ds Max Plus"
 
 # Required minimum versions for this item to run
 requires_shotgun_version:
