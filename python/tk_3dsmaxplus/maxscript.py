@@ -41,6 +41,13 @@ class MaxScript:
         :param menu_var: MaxScript variable name in which the menu will be created
         """
 
+        # Remove old Shotgun menu entry from cache
+        MaxPlus.Core.EvalMAXScript('''
+            -- clear the old menu
+            sgtk_oldMenu = menuMan.findMenu "{menu_name}"
+            if sgtk_oldMenu != undefined then menuMan.unregisterMenu sgtk_oldMenu
+        '''.format(menu_name="Shotgun"))
+
         MaxPlus.Core.EvalMAXScript('''
             -- clear the old menu
             sgtk_oldMenu = menuMan.findMenu "{menu_name}"
