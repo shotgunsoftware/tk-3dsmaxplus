@@ -96,8 +96,8 @@ class MaxEngine(sgtk.platform.Engine):
 
             highest_supported_version = self._max_version_to_year(MaxEngine.MAXIMUM_SUPPORTED_VERSION)
 
-            msg = ("Shotgun Pipeline Toolkit!\n\n"
-                   "The Shotgun Pipeline Toolkit has not yet been fully tested with 3ds Max versions greater than %s. "
+            msg = ("ShotGrid Pipeline Toolkit!\n\n"
+                   "The ShotGrid Pipeline Toolkit has not yet been fully tested with 3ds Max versions greater than %s. "
                    "You can continue to use the Toolkit but you may experience bugs or instability. "
                    "Please report any issues to us via %s." % (highest_supported_version, sgtk.support_url))
             
@@ -105,18 +105,18 @@ class MaxEngine(sgtk.platform.Engine):
             max_year = self._max_version_to_year(self._get_max_version())
             max_next_year = highest_supported_version + 1
             if max_year >= self.get_setting("compatibility_dialog_min_version", max_next_year):
-                MaxPlus.Core.EvalMAXScript('messagebox "Warning - ' + msg + '" title: "Shotgun Warning"')
+                MaxPlus.Core.EvalMAXScript('messagebox "Warning - ' + msg + '" title: "ShotGrid Warning"')
 
             # and log the warning
             self.log_warning(msg)
 
         elif not self._is_at_least_max_2016():
             # Unsupported max version
-            msg = ("Shotgun Pipeline Toolkit!\n\n"
-                   "The Shotgun Pipeline Toolkit does not work with 3ds max versions prior to 2016.")
+            msg = ("ShotGrid Pipeline Toolkit!\n\n"
+                   "The ShotGrid Pipeline Toolkit does not work with 3ds max versions prior to 2016.")
 
             # Display warning dialog
-            MaxPlus.Core.EvalMAXScript('messagebox "Warning - ' + msg + '" title: "Shotgun Warning"')
+            MaxPlus.Core.EvalMAXScript('messagebox "Warning - ' + msg + '" title: "ShotGrid Warning"')
                            
             # and log the warning
             self.log_warning(msg)
@@ -191,7 +191,7 @@ class MaxEngine(sgtk.platform.Engine):
         """
         Add Shotgun menu to the main menu bar.
         """
-        self.log_debug("Adding the shotgun menu to the main menu bar.")
+        self.log_debug("Adding the ShotGrid menu to the main menu bar.")
         self._menu_generator.create_menu()
         self.tk_3dsmax.MaxScript.enable_menu()
 
@@ -199,7 +199,7 @@ class MaxEngine(sgtk.platform.Engine):
         """
         Remove Shotgun menu from the main menu bar.
         """
-        self.log_debug("Removing the shotgun menu from the main menu bar.")
+        self.log_debug("Removing the ShotGrid menu from the main menu bar.")
         self._menu_generator.destroy_menu()
 
     def _on_menus_loaded(self, code):
@@ -336,28 +336,28 @@ class MaxEngine(sgtk.platform.Engine):
         :param msg: The message string to log
         """
         if self.get_setting("debug_logging", False):
-            self.async_execute_in_main_thread(self._print_output, "Shotgun Debug: %s" % msg)
+            self.async_execute_in_main_thread(self._print_output, "ShotGrid Debug: %s" % msg)
 
     def log_info(self, msg):
         """
         Info logging.
         :param msg: The message string to log
         """
-        self.async_execute_in_main_thread(self._print_output, "Shotgun Info: %s" % msg)
+        self.async_execute_in_main_thread(self._print_output, "ShotGrid Info: %s" % msg)
 
     def log_warning(self, msg):
         """
         Warning logging.
         :param msg: The message string to log
         """
-        self.async_execute_in_main_thread(self._print_output, "Shotgun Warning: %s" % msg)
+        self.async_execute_in_main_thread(self._print_output, "ShotGrid Warning: %s" % msg)
 
     def log_error(self, msg):
         """
         Error logging.
         :param msg: The message string to log
         """
-        self.async_execute_in_main_thread(self._print_output, "Shotgun Error: %s" % msg)
+        self.async_execute_in_main_thread(self._print_output, "ShotGrid Error: %s" % msg)
 
     def _print_output(self, msg):
         """

@@ -42,7 +42,7 @@ def bootstrap_sgtk_classic():
 
     if not "TANK_ENGINE" in os.environ:
         logger.error("Missing required environment variable TANK_ENGINE.")
-        error("Shotgun: Missing required environment variable TANK_ENGINE.")
+        error("ShotGrid: Missing required environment variable TANK_ENGINE.")
         return
 
     engine_name = os.environ.get("TANK_ENGINE")
@@ -50,14 +50,14 @@ def bootstrap_sgtk_classic():
         context = sgtk.context.deserialize(os.environ.get("TANK_CONTEXT"))
     except Exception, e:
         logger.exception("Could not create context! sgtk will be disabled.")
-        error("Shotgun: Could not create context! sgtk will be disabled. Details: %s" % e)
+        error("ShotGrid: Could not create context! sgtk will be disabled. Details: %s" % e)
         return
 
     try:
         sgtk.platform.start_engine(engine_name, context.tank, context)
     except Exception, e:
         logger.exception("Could not start engine")
-        error("Shotgun: Could not start engine: %s" % e)
+        error("ShotGrid: Could not start engine: %s" % e)
         return
 
 def bootstrap_sgtk_with_plugins():
@@ -101,7 +101,7 @@ def bootstrap_sgtk():
             path_parts = [ssl_path] + path_parts
             os.environ["PYTHONPATH"] = ";".join(path_parts)
     else:
-        error("Shotgun: Unknown platform - cannot setup ssl")
+        error("ShotGrid: Unknown platform - cannot setup ssl")
         return
 
     if os.environ.get("SGTK_LOAD_MAX_PLUGINS"):
