@@ -2,10 +2,10 @@
 # 
 # CONFIDENTIAL AND PROPRIETARY
 # 
-# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit 
+# This work is provided "AS IS" and subject to the Flow Production Tracking Toolkit 
 # Source Code License included in this distribution package. See LICENSE.
 # By accessing, using, copying or modifying this work you indicate your 
-# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights 
+# agreement to the Flow Production Tracking Toolkit Source Code License. All rights 
 # not expressly granted therein are reserved by Shotgun Software Inc.
 import os
 import sys
@@ -42,7 +42,7 @@ def bootstrap_sgtk_classic():
 
     if not "TANK_ENGINE" in os.environ:
         logger.error("Missing required environment variable TANK_ENGINE.")
-        error("ShotGrid: Missing required environment variable TANK_ENGINE.")
+        error("Flow Production Tracking: Missing required environment variable TANK_ENGINE.")
         return
 
     engine_name = os.environ.get("TANK_ENGINE")
@@ -50,14 +50,14 @@ def bootstrap_sgtk_classic():
         context = sgtk.context.deserialize(os.environ.get("TANK_CONTEXT"))
     except Exception, e:
         logger.exception("Could not create context! sgtk will be disabled.")
-        error("ShotGrid: Could not create context! sgtk will be disabled. Details: %s" % e)
+        error("Flow Production Tracking: Could not create context! sgtk will be disabled. Details: %s" % e)
         return
 
     try:
         sgtk.platform.start_engine(engine_name, context.tank, context)
     except Exception, e:
         logger.exception("Could not start engine")
-        error("ShotGrid: Could not start engine: %s" % e)
+        error("Flow Production Tracking: Could not start engine: %s" % e)
         return
 
 def bootstrap_sgtk_with_plugins():
@@ -101,7 +101,7 @@ def bootstrap_sgtk():
             path_parts = [ssl_path] + path_parts
             os.environ["PYTHONPATH"] = ";".join(path_parts)
     else:
-        error("ShotGrid: Unknown platform - cannot setup ssl")
+        error("Flow Production Tracking: Unknown platform - cannot setup ssl")
         return
 
     if os.environ.get("SGTK_LOAD_MAX_PLUGINS"):

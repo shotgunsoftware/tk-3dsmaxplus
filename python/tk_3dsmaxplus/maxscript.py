@@ -2,10 +2,10 @@
 # 
 # CONFIDENTIAL AND PROPRIETARY
 # 
-# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit 
+# This work is provided "AS IS" and subject to the Flow Production Tracking Toolkit 
 # Source Code License included in this distribution package. See LICENSE.
 # By accessing, using, copying or modifying this work you indicate your 
-# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights 
+# agreement to the Flow Production Tracking Toolkit Source Code License. All rights 
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 """
@@ -140,13 +140,13 @@ class MaxScript:
             "    command_object = engine.maxscript_objects['{hash_name}']\n"
             "    command_object.{command_name}()\n"
             "else:\n"
-            "    engine.log_error('ShotGrid Error: Failed to find Action command in MAXScript callback for action [{action_name}]!')\n"
+            "    engine.log_error('Flow Production Tracking Error: Failed to find Action command in MAXScript callback for action [{action_name}]!')\n"
         ).format(hash_name=hash_name, command_name=method_name, action_name=action_name)
 
         MaxPlus.Core.EvalMAXScript('''
             -- Create MacroScript that will callback to our python object
             macroScript {macro_name}
-            category: "ShotGrid Menu Actions"
+            category: "Flow Production Tracking Menu Actions"
             tooltip: "{action_name}"
             (
 	            on execute do 
@@ -161,12 +161,12 @@ class MaxScript:
                     if (sgtk_main_menu_enabled != undefined and sgtk_main_menu_enabled == True) then
 		                python.execute "{python_code}"
                     else
-                        print "ShotGrid Warning: You need to close the current window dialog before using any more commands."
+                        print "Flow Production Tracking Warning: You need to close the current window dialog before using any more commands."
 	            )
             )
 
             -- Add menu item using previous MacroScript action
-            sgtk_menu_action = menuMan.createActionItem "{macro_name}" "ShotGrid Menu Actions"
+            sgtk_menu_action = menuMan.createActionItem "{macro_name}" "Flow Production Tracking Menu Actions"
             sgtk_menu_action.setUseCustomTitle true
             sgtk_menu_action.setTitle("{action_name}")
             {menu_var}.addItem sgtk_menu_action -1

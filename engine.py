@@ -2,10 +2,10 @@
 #
 # CONFIDENTIAL AND PROPRIETARY
 #
-# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit
+# This work is provided "AS IS" and subject to the Flow Production Tracking Toolkit
 # Source Code License included in this distribution package. See LICENSE.
 # By accessing, using, copying or modifying this work you indicate your
-# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
+# agreement to the Flow Production Tracking Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 """
 A 3ds Max (2015+) engine for Toolkit that uses MaxPlus.
@@ -96,8 +96,8 @@ class MaxEngine(sgtk.platform.Engine):
 
             highest_supported_version = self._max_version_to_year(MaxEngine.MAXIMUM_SUPPORTED_VERSION)
 
-            msg = ("ShotGrid Pipeline Toolkit!\n\n"
-                   "The ShotGrid Pipeline Toolkit has not yet been fully tested with 3ds Max versions greater than %s. "
+            msg = ("Flow Production Tracking Toolkit!\n\n"
+                   "The Flow Production Tracking Toolkit has not yet been fully tested with 3ds Max versions greater than %s. "
                    "You can continue to use the Toolkit but you may experience bugs or instability. "
                    "Please report any issues to us via %s." % (highest_supported_version, sgtk.support_url))
             
@@ -105,18 +105,18 @@ class MaxEngine(sgtk.platform.Engine):
             max_year = self._max_version_to_year(self._get_max_version())
             max_next_year = highest_supported_version + 1
             if max_year >= self.get_setting("compatibility_dialog_min_version", max_next_year):
-                MaxPlus.Core.EvalMAXScript('messagebox "Warning - ' + msg + '" title: "ShotGrid Warning"')
+                MaxPlus.Core.EvalMAXScript('messagebox "Warning - ' + msg + '" title: "Flow Production Tracking Warning"')
 
             # and log the warning
             self.log_warning(msg)
 
         elif not self._is_at_least_max_2016():
             # Unsupported max version
-            msg = ("ShotGrid Pipeline Toolkit!\n\n"
-                   "The ShotGrid Pipeline Toolkit does not work with 3ds max versions prior to 2016.")
+            msg = ("Flow Production Tracking Toolkit!\n\n"
+                   "The Flow Production Tracking Toolkit does not work with 3ds max versions prior to 2016.")
 
             # Display warning dialog
-            MaxPlus.Core.EvalMAXScript('messagebox "Warning - ' + msg + '" title: "ShotGrid Warning"')
+            MaxPlus.Core.EvalMAXScript('messagebox "Warning - ' + msg + '" title: "Flow Production Tracking Warning"')
                            
             # and log the warning
             self.log_warning(msg)
@@ -191,7 +191,7 @@ class MaxEngine(sgtk.platform.Engine):
         """
         Add Shotgun menu to the main menu bar.
         """
-        self.log_debug("Adding the ShotGrid menu to the main menu bar.")
+        self.log_debug("Adding the Flow Production Tracking menu to the main menu bar.")
         self._menu_generator.create_menu()
         self.tk_3dsmax.MaxScript.enable_menu()
 
@@ -199,7 +199,7 @@ class MaxEngine(sgtk.platform.Engine):
         """
         Remove Shotgun menu from the main menu bar.
         """
-        self.log_debug("Removing the ShotGrid menu from the main menu bar.")
+        self.log_debug("Removing the Flow Production Tracking menu from the main menu bar.")
         self._menu_generator.destroy_menu()
 
     def _on_menus_loaded(self, code):
@@ -336,28 +336,28 @@ class MaxEngine(sgtk.platform.Engine):
         :param msg: The message string to log
         """
         if self.get_setting("debug_logging", False):
-            self.async_execute_in_main_thread(self._print_output, "ShotGrid Debug: %s" % msg)
+            self.async_execute_in_main_thread(self._print_output, "Flow Production Tracking Debug: %s" % msg)
 
     def log_info(self, msg):
         """
         Info logging.
         :param msg: The message string to log
         """
-        self.async_execute_in_main_thread(self._print_output, "ShotGrid Info: %s" % msg)
+        self.async_execute_in_main_thread(self._print_output, "Flow Production Tracking Info: %s" % msg)
 
     def log_warning(self, msg):
         """
         Warning logging.
         :param msg: The message string to log
         """
-        self.async_execute_in_main_thread(self._print_output, "ShotGrid Warning: %s" % msg)
+        self.async_execute_in_main_thread(self._print_output, "Flow Production Tracking Warning: %s" % msg)
 
     def log_error(self, msg):
         """
         Error logging.
         :param msg: The message string to log
         """
-        self.async_execute_in_main_thread(self._print_output, "ShotGrid Error: %s" % msg)
+        self.async_execute_in_main_thread(self._print_output, "Flow Production Tracking Error: %s" % msg)
 
     def _print_output(self, msg):
         """
