@@ -93,7 +93,7 @@ class MaxLauncher(SoftwareLauncher):
         # This is a fix for PySide problems in 2017+ versions of Max. Now that
         # Max ships with a full install of PySide, we need to ensure that dlls
         # for the native Max install are sourced. If we don't do this, we end
-        # up with dlls loaded from Flow Production Tracking Toolkit's bin and
+        # up with dlls loaded from Flow Production Tracking's bin and
         # we have a mismatch that results in complete breakage.
         max_root = os.path.dirname(exec_path)
         sgtk.util.prepend_path_to_env_var("PATH", max_root)
