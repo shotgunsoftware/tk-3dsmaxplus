@@ -97,7 +97,7 @@ class MaxEngine(sgtk.platform.Engine):
             highest_supported_version = self._max_version_to_year(MaxEngine.MAXIMUM_SUPPORTED_VERSION)
 
             msg = ("Flow Production Tracking!\n\n"
-                   "The Flow Production Tracking has not yet been fully tested with 3ds Max versions greater than %s. "
+                   "The Flow Production Tracking integration has not yet been fully tested with 3ds Max versions greater than %s. "
                    "You can continue to use the Toolkit but you may experience bugs or instability. "
                    "Please report any issues to us via %s." % (highest_supported_version, sgtk.support_url))
             
@@ -112,8 +112,8 @@ class MaxEngine(sgtk.platform.Engine):
 
         elif not self._is_at_least_max_2016():
             # Unsupported max version
-            msg = ("Flow Production Tracking!\n\n"
-                   "The Flow Production Tracking does not work with 3ds max versions prior to 2016.")
+            msg = ("Flow Production Tracking Toolkit!\n\n"
+                   "The Flow Production Tracking integration does not work with 3ds max versions prior to 2016.")
 
             # Display warning dialog
             MaxPlus.Core.EvalMAXScript('messagebox "Warning - ' + msg + '" title: "Flow Production Tracking Warning"')
