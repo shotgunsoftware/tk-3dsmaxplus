@@ -10,5 +10,5 @@
 
 # the constants associated with this plugin
 
-SG_MENU_ITEMS_CATEGORY = "ShotGrid Menu Actions"
-SG_MENU_LABEL = "ShotGrid"
+SG_MENU_ITEMS_CATEGORY = "Flow Production Tracking Menu Actions"
+SG_MENU_LABEL = "Flow Production Tracking"

@@ -2,10 +2,10 @@
 # 
 # CONFIDENTIAL AND PROPRIETARY
 # 
-# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit 
+# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit
 # Source Code License included in this distribution package. See LICENSE.
 # By accessing, using, copying or modifying this work you indicate your 
-# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights 
+# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 import os
@@ -41,8 +41,8 @@ class MaxSessionPublishPlugin(HookBaseClass):
         loader_url = "https://developer.shotgridsoftware.com/a4c0a4f1/?title=Loader"
 
         return """
-        Publishes the file to ShotGrid. A <b>Publish</b> entry will be
-        created in ShotGrid which will include a reference to the file's current
+        Publishes the file to Flow Production Tracking. A <b>Publish</b> entry will be
+        created in Flow Production Tracking which will include a reference to the file's current
         path on disk. If a publish template is configured, a copy of the
         current session will be copied to the publish template path which
         will be the file that is published. Other users will be able to access
@@ -57,7 +57,7 @@ class MaxSessionPublishPlugin(HookBaseClass):
         file to the next version after publishing.
 
         The <code>version</code> field of the resulting <b>Publish</b> in
-        ShotGrid will also reflect the version number identified in the filename.
+        Flow Production Tracking will also reflect the version number identified in the filename.
         The basic worklfow recognizes the following version formats by default:
 
         <ul>

@@ -2,10 +2,10 @@
 # 
 # CONFIDENTIAL AND PROPRIETARY
 # 
-# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit 
+# This work is provided "AS IS" and subject to the Shotgun Pipeline Toolkit
 # Source Code License included in this distribution package. See LICENSE.
 # By accessing, using, copying or modifying this work you indicate your 
-# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights 
+# agreement to the Shotgun Pipeline Toolkit Source Code License. All rights
 # not expressly granted therein are reserved by Shotgun Software Inc.
 
 """
@@ -20,7 +20,7 @@ import unicodedata
 from sgtk.platform.qt import QtCore, QtGui
 from .maxscript import MaxScript
 
-MENU_LABEL = "ShotGrid"
+MENU_LABEL = "Flow Production Tracking"
 
 class MenuGenerator(object):
     """
@@ -111,7 +111,7 @@ class MenuGenerator(object):
         ctx_name = str(ctx)
 
         MaxScript.create_menu(ctx_name, self._ctx_var)
-        MaxScript.add_action_to_menu(self._jump_to_sg, 'Jump to ShotGrid', self._ctx_var, self._engine)
+        MaxScript.add_action_to_menu(self._jump_to_sg, 'Jump to Flow Production Tracking', self._ctx_var, self._engine)
 
         # Add the menu item only when there are some file system locations.
         if ctx.filesystem_locations:
